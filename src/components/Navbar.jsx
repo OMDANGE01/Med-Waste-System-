@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AppLogo from './AppLogo';
 import { 
   ShieldAlert, 
   LayoutDashboard, 
@@ -140,9 +141,7 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Facility */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-rose-700 flex items-center justify-center shadow-md shadow-rose-900/30">
-              <ShieldAlert className="w-6 h-6 text-white" />
-            </div>
+            <AppLogo size="md" showTelemetryPulse={apiOnline} />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-lg text-white tracking-wider">MED_<span className="text-rose-500">WASTE</span></span>

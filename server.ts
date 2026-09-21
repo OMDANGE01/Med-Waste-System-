@@ -18,7 +18,13 @@ async function startServer() {
   const PORT = 3000;
 
   // Middleware
-  app.use(cors());
+  app.use(
+    cors({
+      origin: true,
+      credentials: true,
+    })
+  );
+  app.options("*", cors());
   app.use(express.json());
 
   // Connect Database (gracefully handles local fallback if Mongo not available)

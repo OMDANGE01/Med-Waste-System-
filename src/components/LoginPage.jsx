@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AppLogo from './AppLogo';
 import { 
   ShieldAlert, 
   Lock, 
@@ -194,8 +195,8 @@ export default function LoginPage({ onLogin, onGuestAccess, theme, toggleTheme }
       <div className="w-full max-w-md space-y-6 z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2.5">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-rose-700 items-center justify-center shadow-lg shadow-rose-900/20">
-            <ShieldAlert className="w-8 h-8 text-white" />
+          <div className="flex justify-center">
+            <AppLogo size="xl" showTelemetryPulse={true} withGlow={true} />
           </div>
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">

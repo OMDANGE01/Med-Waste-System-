@@ -23,18 +23,19 @@ import {
 } from './data/baselineData';
 
 // Resilient network request helper with exponential backoff for container wakeups
-const fetchWithRetry = async (url, options = {}, maxRetries = 3, initialDelay = 350) => {
+const fetchWithRetry = async (url, options = {}, maxRetries = 3, initialDelay = 300) => {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const res = await fetch(url, options);
       return res;
-    } catch (err) {
+    } catch {
       if (attempt === maxRetries - 1) {
-        throw err;
+        return null;
       }
       await new Promise((resolve) => setTimeout(resolve, initialDelay * (attempt + 1)));
     }
   }
+  return null;
 };
 
 // RBAC Role Verification Helpers

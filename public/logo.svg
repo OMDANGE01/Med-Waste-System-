@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <!-- 4-pointed Coral Star Emblem as requested -->
+  <path
+    d="M 24 4.5 Q 24 24 41.5 24 Q 24 24 24 43.5 Q 24 24 6.5 24 Q 24 24 24 4.5 Z"
+    fill="none"
+    stroke="#ff2a5f"
+    stroke-width="3.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
