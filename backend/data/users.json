@@ -1,0 +1,62 @@
+[
+  {
+    "id": "usr_nurse_1",
+    "name": "Nurse Sarah Jenkins",
+    "email": "nurse@stjude.org",
+    "password": "password123",
+    "role": "Clinical Staff / Nurse",
+    "department": "Operating Theater",
+    "avatar": "👩‍⚕️",
+    "createdAt": "2026-09-04T17:12:24.216Z"
+  },
+  {
+    "id": "usr_officer_2",
+    "name": "Officer Marcus Cole",
+    "email": "officer@stjude.org",
+    "password": "password123",
+    "role": "Biohazard Safety Officer",
+    "department": "Central Holding Bay",
+    "avatar": "👨‍🔬",
+    "createdAt": "2026-09-04T17:12:24.216Z"
+  },
+  {
+    "id": "usr_driver_3",
+    "name": "Robert Langdon",
+    "email": "driver@cbwtf.org",
+    "password": "password123",
+    "role": "CBWTF Transport Custodian",
+    "department": "Apex Bio-Clean Logistics",
+    "avatar": "🚚",
+    "createdAt": "2026-09-04T17:12:24.216Z"
+  },
+  {
+    "id": "usr_admin_4",
+    "name": "Dr. Aaron Patel",
+    "email": "admin@stjude.org",
+    "password": "password123",
+    "role": "Chief Medical Superintendent",
+    "department": "Hospital Administration",
+    "avatar": "🩺",
+    "createdAt": "2026-09-04T17:12:24.216Z"
+  },
+  {
+    "id": "usr_1788541970288",
+    "name": "Dr. Test User",
+    "email": "testdoctor@hospital.org",
+    "password": "securepass123",
+    "role": "Chief Medical Superintendent",
+    "department": "Cardiology",
+    "avatar": "🩺",
+    "createdAt": "2026-09-04T17:12:50.288Z"
+  },
+  {
+    "id": "usr_1788542943591",
+    "name": "Dr. Sharma",
+    "email": "dr.sharma@hospital.org",
+    "password": "password123",
+    "role": "Clinical Staff / Nurse",
+    "department": "General Ward",
+    "avatar": "👩‍⚕️",
+    "createdAt": "2026-09-04T17:29:03.591Z"
+  }
+]
