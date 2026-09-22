@@ -145,7 +145,7 @@ curl -X POST http://localhost:5000/api/hardware/calibrate
 
 ---
 
-## 🔒 Default Demo Credentials
+## Default Demo Credentials
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
