@@ -14,6 +14,7 @@ import IncidentModal from './components/IncidentModal';
 import BarcodeBadgeModal from './components/BarcodeBadgeModal';
 import ShareQRModal from './components/ShareQRModal';
 import Toast from './components/Toast';
+import CollapsibleSidebar from './components/CollapsibleSidebar';
 import { ShieldAlert } from 'lucide-react';
 import {
   DEFAULT_STATS,
@@ -180,6 +181,23 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [mapTargetRecord, setMapTargetRecord] = useState(null);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('medwaste_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('medwaste_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleQuota = () => setQuotaExceeded(true);
@@ -650,130 +668,147 @@ export default function App() {
         toggleTheme={toggleTheme}
       />
 
-      {/* Main Content Area with Strict RBAC */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* VIEW 1: Hospital Staff Portal (Staff ONLY sees add bags & tell pickup man) */}
-        {activeTab === 'staffportal' && isStaff(currentUser) && (
-          <HospitalStaffPortalView
-            currentUser={currentUser}
-            records={wasteRecords}
-            onOpenLogModal={() => {
-              setEditingRecord(null);
-              setIsLogModalOpen(true);
-            }}
-            onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
-            onUpdateStatus={handleUpdateWasteStatus}
-            onNotifyDriver={handleStaffNotifyDriver}
-            addToast={addToast}
-          />
-        )}
+      {/* Main Content Area with Collapsible Sidebar & Strict RBAC */}
+      <div className="flex flex-1 w-full min-h-0">
+        <CollapsibleSidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapse}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenLogModal={() => {
+            setEditingRecord(null);
+            setIsLogModalOpen(true);
+          }}
+          currentUser={currentUser}
+          stats={stats}
+          apiOnline={apiOnline}
+        />
 
-        {/* VIEW 2: Head of Department Dashboard (ONLY Supervisor sees this) */}
-        {activeTab === 'dashboard' && isSupervisor(currentUser) && (
-          <DashboardView
-            stats={stats}
-            records={wasteRecords}
-            onNavigateToTab={setActiveTab}
-            onOpenLogModal={() => {
-              setEditingRecord(null);
-              setIsLogModalOpen(true);
-            }}
-            onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
-            onNavigateToMap={handleNavigateToMap}
-          />
-        )}
-
-        {/* VIEW 3: Waste Registry (Supervisor) */}
-        {activeTab === 'registry' && isSupervisor(currentUser) && (
-          <WasteRegistryView
-            records={wasteRecords}
-            isLoading={isLoadingWaste}
-            filters={filters}
-            setFilters={setFilters}
-            onOpenLogModal={() => {
-              setEditingRecord(null);
-              setIsLogModalOpen(true);
-            }}
-            onEditRecord={(rec) => {
-              setEditingRecord(rec);
-              setIsLogModalOpen(true);
-            }}
-            onDeleteRecord={handleDeleteWasteRecord}
-            onUpdateStatus={handleUpdateWasteStatus}
-            onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
-            onNavigateToMap={handleNavigateToMap}
-          />
-        )}
-
-        {/* VIEW 4: Live GPS Map (Supervisor & Driver) */}
-        {activeTab === 'livemap' && (isSupervisor(currentUser) || isDriver(currentUser)) && (
-          <LiveMapView
-            records={wasteRecords}
-            onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
-            onOpenLogModal={() => {
-              setEditingRecord(null);
-              setIsLogModalOpen(true);
-            }}
-            onUpdateStatus={handleUpdateWasteStatus}
-            targetRecord={mapTargetRecord}
-          />
-        )}
-
-        {/* VIEW 5: Pickup Manifests (ONLY Driver sees pickup manifest) */}
-        {activeTab === 'pickups' && isDriver(currentUser) && (
-          <PickupManifestView
-            pickups={pickups}
-            isLoading={isLoadingPickups}
-            onOpenScheduleModal={() => setIsScheduleModalOpen(true)}
-            onUpdatePickupStatus={handleUpdatePickupStatus}
-          />
-        )}
-
-        {/* VIEW 6: Compliance & Audit (Supervisor) */}
-        {activeTab === 'compliance' && isSupervisor(currentUser) && (
-          <ComplianceView
-            incidents={incidents}
-            isLoading={isLoadingIncidents}
-            onOpenIncidentModal={() => setIsIncidentModalOpen(true)}
-            wasteRecords={wasteRecords}
-            stats={stats}
-          />
-        )}
-
-        {/* VIEW 7: Hardware & IoT (Supervisor) */}
-        {activeTab === 'hardware' && isSupervisor(currentUser) && (
-          <HardwareHubView 
-            onAddToast={addToast} 
-            onNavigateToMap={handleNavigateToMap} 
-          />
-        )}
-
-        {/* Unauthorized View Access Guard */}
-        {((isDriver(currentUser) && activeTab !== 'pickups' && activeTab !== 'livemap') ||
-          (isStaff(currentUser) && activeTab !== 'staffportal') ||
-          (isSupervisor(currentUser) && activeTab === 'pickups')) && (
-          <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-xl mx-auto shadow-xl">
-            <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
-            <h3 className="text-lg font-bold text-white">Restricted Section Access</h3>
-            <p className="text-sm text-slate-400">
-              {isDriver(currentUser) && 'Only CBWTF Drivers have access to transit manifests and GPS route tracking.'}
-              {isStaff(currentUser) && 'Hospital Staff accounts are designated for logging bags and dispatching the pickup driver.'}
-              {isSupervisor(currentUser) && 'Transit pickup manifests are restricted strictly to designated CBWTF drivers.'}
-            </p>
-            <button
-              onClick={() => {
-                if (isDriver(currentUser)) setActiveTab('pickups');
-                else if (isStaff(currentUser)) setActiveTab('staffportal');
-                else setActiveTab('dashboard');
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
+          {/* VIEW 1: Hospital Staff Portal (Staff ONLY sees add bags & tell pickup man) */}
+          {activeTab === 'staffportal' && isStaff(currentUser) && (
+            <HospitalStaffPortalView
+              currentUser={currentUser}
+              records={wasteRecords}
+              onOpenLogModal={() => {
+                setEditingRecord(null);
+                setIsLogModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-lg shadow-rose-950"
-            >
-              Return to My Role Workspace
-            </button>
-          </div>
-        )}
-      </main>
+              onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
+              onUpdateStatus={handleUpdateWasteStatus}
+              onNotifyDriver={handleStaffNotifyDriver}
+              addToast={addToast}
+            />
+          )}
+
+          {/* VIEW 2: Head of Department Dashboard (ONLY Supervisor sees this) */}
+          {activeTab === 'dashboard' && isSupervisor(currentUser) && (
+            <DashboardView
+              stats={stats}
+              records={wasteRecords}
+              onNavigateToTab={setActiveTab}
+              onOpenLogModal={() => {
+                setEditingRecord(null);
+                setIsLogModalOpen(true);
+              }}
+              onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
+              onNavigateToMap={handleNavigateToMap}
+            />
+          )}
+
+          {/* VIEW 3: Waste Registry (Supervisor) */}
+          {activeTab === 'registry' && isSupervisor(currentUser) && (
+            <WasteRegistryView
+              records={wasteRecords}
+              isLoading={isLoadingWaste}
+              filters={filters}
+              setFilters={setFilters}
+              onOpenLogModal={() => {
+                setEditingRecord(null);
+                setIsLogModalOpen(true);
+              }}
+              onEditRecord={(rec) => {
+                setEditingRecord(rec);
+                setIsLogModalOpen(true);
+              }}
+              onDeleteRecord={handleDeleteWasteRecord}
+              onUpdateStatus={handleUpdateWasteStatus}
+              onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
+              onNavigateToMap={handleNavigateToMap}
+              onAddToast={addToast}
+            />
+          )}
+
+          {/* VIEW 4: Live GPS Map (Supervisor & Driver) */}
+          {activeTab === 'livemap' && (isSupervisor(currentUser) || isDriver(currentUser)) && (
+            <LiveMapView
+              records={wasteRecords}
+              onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
+              onOpenLogModal={() => {
+                setEditingRecord(null);
+                setIsLogModalOpen(true);
+              }}
+              onUpdateStatus={handleUpdateWasteStatus}
+              targetRecord={mapTargetRecord}
+            />
+          )}
+
+          {/* VIEW 5: Pickup Manifests (ONLY Driver sees pickup manifest) */}
+          {activeTab === 'pickups' && isDriver(currentUser) && (
+            <PickupManifestView
+              pickups={pickups}
+              isLoading={isLoadingPickups}
+              onOpenScheduleModal={() => setIsScheduleModalOpen(true)}
+              onUpdatePickupStatus={handleUpdatePickupStatus}
+            />
+          )}
+
+          {/* VIEW 6: Compliance & Audit (Supervisor) */}
+          {activeTab === 'compliance' && isSupervisor(currentUser) && (
+            <ComplianceView
+              incidents={incidents}
+              isLoading={isLoadingIncidents}
+              onOpenIncidentModal={() => setIsIncidentModalOpen(true)}
+              wasteRecords={wasteRecords}
+              stats={stats}
+              onAddToast={addToast}
+            />
+          )}
+
+          {/* VIEW 7: Hardware & IoT (Supervisor) */}
+          {activeTab === 'hardware' && isSupervisor(currentUser) && (
+            <HardwareHubView 
+              onAddToast={addToast} 
+              onNavigateToMap={handleNavigateToMap} 
+            />
+          )}
+
+          {/* Unauthorized View Access Guard */}
+          {((isDriver(currentUser) && activeTab !== 'pickups' && activeTab !== 'livemap') ||
+            (isStaff(currentUser) && activeTab !== 'staffportal') ||
+            (isSupervisor(currentUser) && activeTab === 'pickups')) && (
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-xl mx-auto shadow-xl">
+              <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
+              <h3 className="text-lg font-bold text-white">Restricted Section Access</h3>
+              <p className="text-sm text-slate-400">
+                {isDriver(currentUser) && 'Only CBWTF Drivers have access to transit manifests and GPS route tracking.'}
+                {isStaff(currentUser) && 'Hospital Staff accounts are designated for logging bags and dispatching the pickup driver.'}
+                {isSupervisor(currentUser) && 'Transit pickup manifests are restricted strictly to designated CBWTF drivers.'}
+              </p>
+              <button
+                onClick={() => {
+                  if (isDriver(currentUser)) setActiveTab('pickups');
+                  else if (isStaff(currentUser)) setActiveTab('staffportal');
+                  else setActiveTab('dashboard');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-lg shadow-rose-950"
+              >
+                Return to My Role Workspace
+              </button>
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* Modals */}
       <WasteLogModal

@@ -12,6 +12,7 @@ import {
   Building,
   Navigation
 } from 'lucide-react';
+import TableSkeleton from './TableSkeleton';
 
 export default function PickupManifestView({
   pickups,
@@ -93,9 +94,7 @@ export default function PickupManifestView({
       {/* Manifests List */}
       <div className="space-y-4">
         {isLoading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full"></div>
-          </div>
+          <TableSkeleton rows={4} cols={4} />
         ) : pickups.length === 0 ? (
           <div className="p-12 text-center rounded-2xl bg-slate-900/80 border border-slate-800">
             <Truck className="w-10 h-10 text-slate-500 mx-auto mb-3" />

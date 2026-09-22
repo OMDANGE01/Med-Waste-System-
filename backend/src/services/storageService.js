@@ -269,8 +269,9 @@ const getStats = async () => {
   const categoryBreakdown = {
     Yellow: { count: 0, weightKg: 0 },
     Red: { count: 0, weightKg: 0 },
-    White: { count: 0, weightKg: 0 },
     Blue: { count: 0, weightKg: 0 },
+    White: { count: 0, weightKg: 0 },
+    Black: { count: 0, weightKg: 0 },
   };
 
   const departmentBreakdown = {};

@@ -9,7 +9,7 @@
       "handlerName": "KUNAL",
       "location": "KHAMGOAN DWARKA",
       "hazardLevel": "Bio-Infectious",
-      "notes": "THE INGECTION IS PAKCAGE INPERFECTLY",
+      "notes": "The injection syringe is packaged securely in accordance with sharp disposal protocol.",
       "status": "Logged",
       "createdAt": "2026-09-04T17:20:59.031Z",
       "updatedAt": "2026-09-07T15:34:37.460Z",
@@ -54,7 +54,7 @@
     {
       "_id": "waste_3",
       "tagId": "MW-2026-1003",
-      "category": "White",
+      "category": "Red",
       "department": "Emergency",
       "weightKg": 2.1,
       "status": "Awaiting Pickup",
@@ -124,7 +124,7 @@
     {
       "_id": "waste_7",
       "tagId": "MW-2026-1007",
-      "category": "White",
+      "category": "Red",
       "department": "Operating Theater",
       "weightKg": 1.8,
       "status": "Disposed",
@@ -155,6 +155,40 @@
       "hospitalName": "Metro City General Hospital",
       "lat": 20.0125,
       "lng": 73.765
+    },
+    {
+      "_id": "waste_9",
+      "tagId": "MW-2026-1009",
+      "category": "Black",
+      "department": "Oncology",
+      "weightKg": 3.4,
+      "status": "Logged",
+      "handlerName": "Nurse David Kim",
+      "location": "Chemo Prep Room",
+      "hazardLevel": "Toxic Chemical",
+      "notes": "Cytotoxic spill cleanup absorbent material and general non-infectious hospital packaging.",
+      "createdAt": "2026-09-04T14:15:00.000Z",
+      "updatedAt": "2026-09-04T14:15:00.000Z",
+      "hospitalName": "Apollo Super Specialty Hospital",
+      "lat": 20.021,
+      "lng": 73.778
+    },
+    {
+      "_id": "waste_10",
+      "tagId": "MW-2026-1010",
+      "category": "White",
+      "department": "Operating Theater",
+      "weightKg": 1.2,
+      "status": "Logged",
+      "handlerName": "Nurse Sarah Jenkins",
+      "location": "OT-3 Scrub Station",
+      "hazardLevel": "Sharp Hazard",
+      "notes": "Translucent puncture-proof sharps canister with capped safety stylets.",
+      "createdAt": "2026-09-04T15:30:00.000Z",
+      "updatedAt": "2026-09-04T15:30:00.000Z",
+      "hospitalName": "St. Jude Memorial Hospital",
+      "lat": 19.9975,
+      "lng": 73.7898
     }
   ],
   "pickups": [

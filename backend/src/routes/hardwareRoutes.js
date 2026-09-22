@@ -7,5 +7,7 @@ router.post('/scale', hwCtrl.updateScaleWeight);
 router.post('/calibrate', hwCtrl.calibrateScale);
 router.post('/scan', hwCtrl.recordBarcodeScan);
 router.post('/bin/toggle-lid', hwCtrl.toggleBinLid);
+router.post('/robot/command', hwCtrl.controlRobot);
+router.post('/robot/empty-bin', hwCtrl.emptyRobotBin);
 
 module.exports = router;

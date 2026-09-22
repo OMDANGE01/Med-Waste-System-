@@ -11,7 +11,7 @@ const wasteRecordSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Yellow', 'Red', 'White', 'Blue'],
+      enum: ['Yellow', 'Red', 'Blue', 'White', 'Black'],
     },
     department: {
       type: String,
