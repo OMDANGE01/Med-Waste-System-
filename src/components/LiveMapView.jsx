@@ -30,11 +30,11 @@ const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 // Predefined central biomedical waste treatment facility (CBWTF)
 const CBWTF_FACILITY = {
-  name: 'Apex Central CBWTF Treatment Plant',
+  name: 'Khamgaon Central CBWTF Treatment Facility',
   type: 'CBWTF_PLANT',
-  lat: 20.0350,
-  lng: 73.8450,
-  description: 'Regional High-Temperature Incineration, Autoclave & Shredding Facility',
+  lat: 20.6720,
+  lng: 76.5450,
+  description: 'Regional High-Temperature Incineration, Autoclave & Shredding Facility (MIDC Industrial Area, Khamgaon)',
   capacity: '15,000 kg / day'
 };
 
@@ -84,14 +84,13 @@ export default function LiveMapView({
   useEffect(() => {
     if (!isSimulatingTransit) return;
 
-    // Waypoints across hospitals leading to CBWTF facility
+    // Waypoints across Khamgaon hospitals leading to MIDC CBWTF facility
     const waypoints = [
-      { lat: 19.9975, lng: 73.7898 }, // St. Jude
-      { lat: 20.0063, lng: 73.7902 }, // Dwarka
-      { lat: 20.0125, lng: 73.7650 }, // Metro City
-      { lat: 20.0210, lng: 73.7780 }, // Apollo
-      { lat: 19.9850, lng: 73.8120 }, // Apex Research
-      { lat: 20.0350, lng: 73.8450 }, // CBWTF Plant
+      { lat: 20.6920, lng: 76.5695 }, // Government Hospital of Khamgaon
+      { lat: 20.6854, lng: 76.5742 }, // Dwarka Hospital of Khamgaon
+      { lat: 20.6812, lng: 76.5615 }, // Anand Hospital of Khamgaon
+      { lat: 20.6970, lng: 76.5720 }, // Dr. Hedgewar Rugnalaya Khamgaon
+      { lat: 20.6720, lng: 76.5450 }, // Khamgaon CBWTF Plant (MIDC)
     ];
 
     let wpIdx = 0;
@@ -127,9 +126,9 @@ export default function LiveMapView({
   const uniqueHospitals = useMemo(() => {
     const map = new Map();
     records.forEach(r => {
-      const name = r.hospitalName || 'St. Jude Memorial Hospital';
-      const lat = r.lat || 19.9975;
-      const lng = r.lng || 73.7898;
+      const name = r.hospitalName || 'Government Hospital of Khamgaon';
+      const lat = r.lat || 20.6920;
+      const lng = r.lng || 76.5695;
       if (!map.has(name)) {
         map.set(name, { name, lat, lng, bagCount: 1, totalWeight: r.weightKg || 0 });
       } else {
@@ -144,7 +143,7 @@ export default function LiveMapView({
   // Filtered bags to render on map and in list
   const filteredRecords = useMemo(() => {
     return records.filter(r => {
-      const hosp = r.hospitalName || 'St. Jude Memorial Hospital';
+      const hosp = r.hospitalName || 'Government Hospital of Khamgaon';
       if (selectedHospitalFilter !== 'All' && hosp !== selectedHospitalFilter) return false;
       if (selectedCategoryFilter !== 'All' && r.category !== selectedCategoryFilter) return false;
       if (selectedStatusFilter !== 'All' && r.status !== selectedStatusFilter) return false;
@@ -538,8 +537,8 @@ export default function LiveMapView({
           {API_KEY ? (
             <APIProvider apiKey={API_KEY}>
               <GoogleMap
-                defaultCenter={{ lat: 20.0050, lng: 73.7900 }}
-                defaultZoom={12}
+                defaultCenter={{ lat: 20.6869, lng: 76.5670 }}
+                defaultZoom={13}
                 mapId="DEMO_MAP_ID"
                 internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
                 mapTypeId={mapType}

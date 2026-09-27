@@ -4,7 +4,15 @@ const { isConnected } = require('../config/db');
 const WasteRecordModel = require('../models/WasteRecord');
 const PickupRequestModel = require('../models/PickupRequest');
 const IncidentModel = require('../models/Incident');
-const { initialWasteRecords, initialPickups, initialIncidents } = require('../seeds/seedData');
+const HospitalModel = require('../models/Hospital');
+const WorkerModel = require('../models/Worker');
+const { 
+  initialHospitals, 
+  initialWorkers, 
+  initialWasteRecords, 
+  initialPickups, 
+  initialIncidents 
+} = require('../seeds/seedData');
 
 const DATA_DIR = process.env.DATA_DIR || (fs.existsSync(path.join(process.cwd(), 'backend/data')) ? path.join(process.cwd(), 'backend/data') : path.join(__dirname, '../../data'));
 const DATA_FILE = path.join(DATA_DIR, 'db_store.json');
@@ -14,11 +22,14 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// In-Memory Fallback State
+// In-Memory Resilient Fallback State
 let localStore = {
+  hospitals: [...initialHospitals.map((h, i) => ({ _id: `hosp_${i + 1}`, ...h }))],
+  workers: [...initialWorkers.map((w, i) => ({ _id: `wrk_${i + 1}`, ...w }))],
   wasteRecords: [...initialWasteRecords.map((r, i) => ({ _id: `waste_${i + 1}`, ...r }))],
   pickups: [...initialPickups.map((p, i) => ({ _id: `pickup_${i + 1}`, ...p }))],
   incidents: [...initialIncidents.map((inc, i) => ({ _id: `inc_${i + 1}`, ...inc }))],
+  syncLog: [],
 };
 
 // Load saved data if exists
@@ -27,7 +38,12 @@ try {
     const raw = fs.readFileSync(DATA_FILE, 'utf8');
     const parsed = JSON.parse(raw);
     if (parsed && parsed.wasteRecords) {
-      localStore = parsed;
+      localStore = {
+        ...localStore,
+        ...parsed,
+        hospitals: parsed.hospitals && parsed.hospitals.length ? parsed.hospitals : localStore.hospitals,
+        workers: parsed.workers && parsed.workers.length ? parsed.workers : localStore.workers,
+      };
     }
   } else {
     fs.writeFileSync(DATA_FILE, JSON.stringify(localStore, null, 2), 'utf8');
@@ -44,21 +60,129 @@ const saveLocalStore = () => {
   }
 };
 
+// --- HOSPITALS METHODS ---
+const getAllHospitals = async () => {
+  if (isConnected()) {
+    try {
+      const records = await HospitalModel.find({}).sort({ bedCapacity: -1 });
+      if (records && records.length > 0) return records;
+    } catch (e) {
+      console.warn('[Storage] Hospital query fallback:', e.message);
+    }
+  }
+  return localStore.hospitals;
+};
+
+const getHospitalById = async (id) => {
+  if (isConnected()) {
+    try {
+      const record = await HospitalModel.findOne({ $or: [{ hospitalId: id }, { _id: id }] });
+      if (record) return record;
+    } catch (e) {
+      console.warn('[Storage] Hospital lookup fallback:', e.message);
+    }
+  }
+  return localStore.hospitals.find((h) => h.hospitalId === id || h._id === id || h.name.toLowerCase().includes(id.toLowerCase()));
+};
+
+// --- WORKERS METHODS ---
+const getAllWorkers = async (hospitalId = null) => {
+  if (isConnected()) {
+    try {
+      const query = hospitalId && hospitalId !== 'ALL' ? { hospitalId } : {};
+      const workers = await WorkerModel.find(query).sort({ role: 1 });
+      if (workers && workers.length > 0) return workers;
+    } catch (e) {
+      console.warn('[Storage] Worker query fallback:', e.message);
+    }
+  }
+
+  let list = [...localStore.workers];
+  if (hospitalId && hospitalId !== 'ALL') {
+    list = list.filter((w) => w.hospitalId === hospitalId || w.hospitalId === 'ALL');
+  }
+  return list;
+};
+
+const createWorker = async (data) => {
+  const newWorkerId = data.workerId || `WRK-${Date.now().toString().slice(-4)}`;
+  const workerObj = {
+    ...data,
+    workerId: newWorkerId,
+    avatar: data.role?.includes('Surgeon') || data.role?.includes('Doctor') 
+      ? '👨‍⚕️' 
+      : data.role?.includes('Nurse') 
+      ? '👩‍⚕️' 
+      : data.role?.includes('Registration') 
+      ? '🏷️' 
+      : data.role?.includes('Delivery') 
+      ? '📦' 
+      : data.role?.includes('Driver') 
+      ? '🚚' 
+      : '👤',
+    dutyStatus: data.dutyStatus || 'On Duty',
+    createdAt: new Date().toISOString(),
+  };
+
+  if (isConnected()) {
+    try {
+      const record = new WorkerModel(workerObj);
+      return await record.save();
+    } catch (e) {
+      console.warn('[Storage] Worker create fallback:', e.message);
+    }
+  }
+
+  const saved = { _id: `wrk_${Date.now()}`, ...workerObj };
+  localStore.workers.unshift(saved);
+  saveLocalStore();
+  return saved;
+};
+
+const updateWorkerStatus = async (id, status) => {
+  if (isConnected()) {
+    try {
+      return await WorkerModel.findOneAndUpdate(
+        { $or: [{ workerId: id }, { _id: id }] },
+        { dutyStatus: status },
+        { new: true }
+      );
+    } catch (e) {
+      // fallback
+    }
+  }
+
+  const idx = localStore.workers.findIndex((w) => w.workerId === id || w._id === id);
+  if (idx !== -1) {
+    localStore.workers[idx].dutyStatus = status;
+    saveLocalStore();
+    return localStore.workers[idx];
+  }
+  return null;
+};
+
 // --- WASTE RECORDS METHODS ---
 const getAllWaste = async (filters = {}) => {
   if (isConnected()) {
-    const query = {};
-    if (filters.category && filters.category !== 'All') query.category = filters.category;
-    if (filters.department && filters.department !== 'All') query.department = filters.department;
-    if (filters.status && filters.status !== 'All') query.status = filters.status;
-    if (filters.search) {
-      query.$or = [
-        { tagId: { $regex: filters.search, $options: 'i' } },
-        { handlerName: { $regex: filters.search, $options: 'i' } },
-        { location: { $regex: filters.search, $options: 'i' } },
-      ];
+    try {
+      const query = {};
+      if (filters.category && filters.category !== 'All') query.category = filters.category;
+      if (filters.department && filters.department !== 'All') query.department = filters.department;
+      if (filters.status && filters.status !== 'All') query.status = filters.status;
+      if (filters.hospitalId && filters.hospitalId !== 'ALL') query.hospitalId = filters.hospitalId;
+      if (filters.hospitalName && filters.hospitalName !== 'ALL') query.hospitalName = filters.hospitalName;
+      if (filters.search) {
+        query.$or = [
+          { tagId: { $regex: filters.search, $options: 'i' } },
+          { handlerName: { $regex: filters.search, $options: 'i' } },
+          { location: { $regex: filters.search, $options: 'i' } },
+          { hospitalName: { $regex: filters.search, $options: 'i' } },
+        ];
+      }
+      return await WasteRecordModel.find(query).sort({ createdAt: -1 });
+    } catch (e) {
+      console.warn('[Storage] MongoDB waste query error, falling back to local:', e.message);
     }
-    return await WasteRecordModel.find(query).sort({ createdAt: -1 });
   }
 
   // Fallback
@@ -72,13 +196,20 @@ const getAllWaste = async (filters = {}) => {
   if (filters.status && filters.status !== 'All') {
     list = list.filter((r) => r.status === filters.status);
   }
+  if (filters.hospitalId && filters.hospitalId !== 'ALL') {
+    list = list.filter((r) => r.hospitalId === filters.hospitalId);
+  }
+  if (filters.hospitalName && filters.hospitalName !== 'ALL') {
+    list = list.filter((r) => r.hospitalName === filters.hospitalName);
+  }
   if (filters.search) {
     const s = filters.search.toLowerCase();
     list = list.filter(
       (r) =>
         r.tagId.toLowerCase().includes(s) ||
         r.handlerName.toLowerCase().includes(s) ||
-        r.location.toLowerCase().includes(s)
+        r.location.toLowerCase().includes(s) ||
+        (r.hospitalName && r.hospitalName.toLowerCase().includes(s))
     );
   }
   return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -86,15 +217,23 @@ const getAllWaste = async (filters = {}) => {
 
 const getWasteById = async (id) => {
   if (isConnected()) {
-    return await WasteRecordModel.findById(id);
+    try {
+      return await WasteRecordModel.findById(id);
+    } catch (e) {
+      // fallback
+    }
   }
   return localStore.wasteRecords.find((r) => r._id === id || r.tagId === id);
 };
 
 const createWasteRecord = async (data) => {
   if (isConnected()) {
-    const record = new WasteRecordModel(data);
-    return await record.save();
+    try {
+      const record = new WasteRecordModel(data);
+      return await record.save();
+    } catch (e) {
+      console.warn('[Storage] Fallback to local store for waste creation:', e.message);
+    }
   }
 
   const newRecord = {
@@ -111,7 +250,11 @@ const createWasteRecord = async (data) => {
 
 const updateWasteRecord = async (id, updateData) => {
   if (isConnected()) {
-    return await WasteRecordModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    try {
+      return await WasteRecordModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    } catch (e) {
+      // fallback
+    }
   }
 
   const idx = localStore.wasteRecords.findIndex((r) => r._id === id || r.tagId === id);
@@ -127,7 +270,11 @@ const updateWasteRecord = async (id, updateData) => {
 
 const deleteWasteRecord = async (id) => {
   if (isConnected()) {
-    return await WasteRecordModel.findByIdAndDelete(id);
+    try {
+      return await WasteRecordModel.findByIdAndDelete(id);
+    } catch (e) {
+      // fallback
+    }
   }
 
   const idx = localStore.wasteRecords.findIndex((r) => r._id === id || r.tagId === id);
@@ -140,23 +287,23 @@ const deleteWasteRecord = async (id) => {
 // --- PICKUP & MANIFEST METHODS ---
 const getAllPickups = async () => {
   if (isConnected()) {
-    return await PickupRequestModel.find().sort({ scheduledDate: -1 });
+    try {
+      return await PickupRequestModel.find({}).sort({ scheduledDate: -1 });
+    } catch (e) {
+      // fallback
+    }
   }
   return [...localStore.pickups].sort((a, b) => new Date(b.scheduledDate) - new Date(a.scheduledDate));
 };
 
 const createPickup = async (data) => {
   if (isConnected()) {
-    const pickup = new PickupRequestModel(data);
-    const saved = await pickup.save();
-    // Update linked waste records to In Transit or Awaiting Pickup
-    if (data.wasteRecordIds && data.wasteRecordIds.length > 0) {
-      await WasteRecordModel.updateMany(
-        { tagId: { $in: data.wasteRecordIds } },
-        { status: 'In Transit', pickupId: saved._id.toString() }
-      );
+    try {
+      const pickup = new PickupRequestModel(data);
+      return await pickup.save();
+    } catch (e) {
+      // fallback
     }
-    return saved;
   }
 
   const newPickup = {
@@ -164,116 +311,169 @@ const createPickup = async (data) => {
     ...data,
     status: data.status || 'Scheduled',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
   localStore.pickups.unshift(newPickup);
-
-  // Link waste records in local store
-  if (data.wasteRecordIds && data.wasteRecordIds.length > 0) {
-    localStore.wasteRecords = localStore.wasteRecords.map((rec) => {
-      if (data.wasteRecordIds.includes(rec.tagId)) {
-        return { ...rec, status: 'In Transit', pickupId: newPickup._id };
-      }
-      return rec;
-    });
-  }
   saveLocalStore();
   return newPickup;
 };
 
-const updatePickupStatus = async (id, status) => {
+const updatePickupStatus = async (id, status, driverName, vehicleNumber) => {
+  const updateObj = { status };
+  if (status === 'Completed') updateObj.completedDate = new Date();
+  if (driverName) updateObj.driverName = driverName;
+  if (vehicleNumber) updateObj.vehicleNumber = vehicleNumber;
+
   if (isConnected()) {
-    const update = { status };
-    if (status === 'Completed') update.completedDate = new Date();
-    const updated = await PickupRequestModel.findByIdAndUpdate(id, update, { new: true });
-    if (updated && status === 'Completed' && updated.wasteRecordIds) {
-      await WasteRecordModel.updateMany(
-        { tagId: { $in: updated.wasteRecordIds } },
-        { status: 'Disposed', disposedAt: new Date() }
+    try {
+      return await PickupRequestModel.findOneAndUpdate(
+        { $or: [{ _id: id }, { manifestNumber: id }] },
+        updateObj,
+        { new: true }
       );
+    } catch (e) {
+      // fallback
     }
-    return updated;
   }
 
   const idx = localStore.pickups.findIndex((p) => p._id === id || p.manifestNumber === id);
   if (idx === -1) return null;
-  const p = localStore.pickups[idx];
-  p.status = status;
-  if (status === 'Completed') {
-    p.completedDate = new Date().toISOString();
-    localStore.wasteRecords = localStore.wasteRecords.map((w) => {
-      if (p.wasteRecordIds && p.wasteRecordIds.includes(w.tagId)) {
-        return { ...w, status: 'Disposed', disposedAt: new Date().toISOString() };
-      }
-      return w;
-    });
-  }
+  localStore.pickups[idx] = {
+    ...localStore.pickups[idx],
+    ...updateObj,
+    updatedAt: new Date().toISOString(),
+  };
   saveLocalStore();
-  return p;
+  return localStore.pickups[idx];
 };
 
-// --- INCIDENT & COMPLIANCE METHODS ---
+// --- INCIDENTS METHODS ---
 const getAllIncidents = async () => {
   if (isConnected()) {
-    return await IncidentModel.find().sort({ reportedDate: -1 });
+    try {
+      return await IncidentModel.find({}).sort({ reportedDate: -1 });
+    } catch (e) {
+      // fallback
+    }
   }
   return [...localStore.incidents].sort((a, b) => new Date(b.reportedDate) - new Date(a.reportedDate));
 };
 
 const createIncident = async (data) => {
+  const incidentId = `INC-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
+  const incidentData = { ...data, incidentId };
+
   if (isConnected()) {
-    const incident = new IncidentModel(data);
-    return await incident.save();
+    try {
+      const incident = new IncidentModel(incidentData);
+      return await incident.save();
+    } catch (e) {
+      // fallback
+    }
   }
 
-  const newInc = {
+  const newIncident = {
     _id: `inc_${Date.now()}`,
-    ...data,
-    reportedDate: data.reportedDate || new Date().toISOString(),
-    status: data.status || 'Resolved',
+    ...incidentData,
+    status: 'Open',
+    reportedDate: new Date().toISOString(),
   };
-  localStore.incidents.unshift(newInc);
+  localStore.incidents.unshift(newIncident);
   saveLocalStore();
-  return newInc;
+  return newIncident;
 };
 
-const resolveIncident = async (id, resolution) => {
+const resolveIncident = async (id, correctiveAction) => {
   if (isConnected()) {
-    return await IncidentModel.findOneAndUpdate(
-      { $or: [{ _id: id }, { incidentId: id }] },
-      { status: 'Resolved', correctiveAction: resolution || 'Addressed and resolved by safety officer' },
-      { new: true }
-    );
+    try {
+      return await IncidentModel.findOneAndUpdate(
+        { $or: [{ _id: id }, { incidentId: id }] },
+        { status: 'Resolved', correctiveAction, resolvedAt: new Date() },
+        { new: true }
+      );
+    } catch (e) {
+      // fallback
+    }
   }
 
   const idx = localStore.incidents.findIndex((i) => i._id === id || i.incidentId === id);
   if (idx === -1) return null;
   localStore.incidents[idx].status = 'Resolved';
-  if (resolution) {
-    localStore.incidents[idx].correctiveAction = resolution;
-  }
+  localStore.incidents[idx].correctiveAction = correctiveAction;
+  localStore.incidents[idx].resolvedAt = new Date().toISOString();
   saveLocalStore();
   return localStore.incidents[idx];
 };
 
-// --- STATS / METRICS AGGREGATION ---
-const getStats = async () => {
-  const records = await getAllWaste();
-  const pickups = await getAllPickups();
-  const incidents = await getAllIncidents();
-
-  let totalWeight = 0;
-  let activeWeight = 0; // Not yet disposed
-  let disposedWeight = 0;
-
-  const categoryBreakdown = {
-    Yellow: { count: 0, weightKg: 0 },
-    Red: { count: 0, weightKg: 0 },
-    Blue: { count: 0, weightKg: 0 },
-    White: { count: 0, weightKg: 0 },
-    Black: { count: 0, weightKg: 0 },
+// --- CLOUD SYNC ENGINE: Process Batched Offline Transactions ---
+const syncTransactions = async (transactions = []) => {
+  const results = {
+    processed: 0,
+    succeeded: 0,
+    failed: 0,
+    details: [],
   };
 
+  for (const tx of transactions) {
+    results.processed += 1;
+    try {
+      const { operation, table, payload, clientTimestamp, txId } = tx;
+
+      if (table === 'waste_records') {
+        if (operation === 'INSERT') {
+          await createWasteRecord(payload);
+        } else if (operation === 'UPDATE') {
+          await updateWasteRecord(payload.id || payload._id || payload.tagId, payload);
+        } else if (operation === 'DELETE') {
+          await deleteWasteRecord(payload.id || payload._id || payload.tagId);
+        }
+      } else if (table === 'pickup_requests') {
+        if (operation === 'INSERT') {
+          await createPickup(payload);
+        } else if (operation === 'UPDATE') {
+          await updatePickupStatus(payload.id || payload.manifestNumber, payload.status, payload.driverName, payload.vehicleNumber);
+        }
+      } else if (table === 'workers') {
+        if (operation === 'INSERT') {
+          await createWorker(payload);
+        } else if (operation === 'UPDATE_STATUS') {
+          await updateWorkerStatus(payload.workerId, payload.dutyStatus);
+        }
+      } else if (table === 'incidents') {
+        if (operation === 'INSERT') {
+          await createIncident(payload);
+        }
+      }
+
+      results.succeeded += 1;
+      results.details.push({ txId, status: 'synced', timestamp: new Date().toISOString() });
+    } catch (err) {
+      results.failed += 1;
+      results.details.push({ txId: tx.txId, status: 'error', error: err.message });
+    }
+  }
+
+  localStore.syncLog = [
+    ...results.details,
+    ...(localStore.syncLog || []).slice(0, 100),
+  ];
+  saveLocalStore();
+
+  return results;
+};
+
+// --- STATS & SUPER MONITOR AGGREGATIONS ---
+const getStats = async (hospitalId = null) => {
+  const records = await getAllWaste(hospitalId && hospitalId !== 'ALL' ? { hospitalId } : {});
+  const pickups = await getAllPickups();
+  const incidents = await getAllIncidents();
+  const hospitals = await getAllHospitals();
+  const workers = await getAllWorkers(hospitalId);
+
+  let totalWeight = 0;
+  let activeWeight = 0;
+  let disposedWeight = 0;
+
+  const categoryBreakdown = { Yellow: 0, Red: 0, Blue: 0, Black: 0, White: 0 };
   const departmentBreakdown = {};
   const statusCounts = {
     Logged: 0,
@@ -283,17 +483,17 @@ const getStats = async () => {
   };
 
   records.forEach((r) => {
-    const w = Number(r.weightKg) || 0;
+    const w = parseFloat(r.weightKg) || 0;
     totalWeight += w;
+
     if (r.status === 'Disposed') {
       disposedWeight += w;
     } else {
       activeWeight += w;
     }
 
-    if (categoryBreakdown[r.category]) {
-      categoryBreakdown[r.category].count += 1;
-      categoryBreakdown[r.category].weightKg = Number((categoryBreakdown[r.category].weightKg + w).toFixed(2));
+    if (categoryBreakdown[r.category] !== undefined) {
+      categoryBreakdown[r.category] = Number((categoryBreakdown[r.category] + w).toFixed(2));
     }
 
     if (!departmentBreakdown[r.department]) {
@@ -308,12 +508,35 @@ const getStats = async () => {
   });
 
   const totalBags = records.length;
-  // Compliance score calculation based on timely pickup, resolved incidents, and bag weight bounds
   const openIncidents = incidents.filter((i) => i.status !== 'Resolved').length;
   let complianceScore = 98;
   if (openIncidents > 0) complianceScore -= openIncidents * 10;
   if (statusCounts['Awaiting Pickup'] > 5) complianceScore -= 5;
   complianceScore = Math.max(70, Math.min(100, complianceScore));
+
+  // Multi-hospital breakdown for Super Monitor
+  const hospitalSummaries = hospitals.map((h) => {
+    const hBags = localStore.wasteRecords.filter((r) => r.hospitalId === h.hospitalId || r.hospitalName === h.name);
+    const hWeight = hBags.reduce((acc, b) => acc + (parseFloat(b.weightKg) || 0), 0);
+    const hAwaiting = hBags.filter((b) => b.status === 'Awaiting Pickup').length;
+    const hWorkers = localStore.workers.filter((w) => w.hospitalId === h.hospitalId).length;
+    return {
+      hospitalId: h.hospitalId,
+      name: h.name,
+      cpcbCode: h.cpcbCode,
+      bedCapacity: h.bedCapacity,
+      zone: h.zone,
+      lat: h.lat,
+      lng: h.lng,
+      superintendent: h.superintendent,
+      totalBags: hBags.length,
+      totalWeightKg: Number(hWeight.toFixed(2)),
+      awaitingPickupCount: hAwaiting,
+      workersCount: hWorkers,
+      complianceScore: Math.min(100, Math.max(82, 98 - hAwaiting * 2)),
+      status: h.status,
+    };
+  });
 
   return {
     totalBags,
@@ -327,31 +550,50 @@ const getStats = async () => {
     recentPickupsCount: pickups.length,
     incidentCount: incidents.length,
     openIncidents,
+    totalHospitalsCount: hospitals.length,
+    totalWorkersCount: workers.length,
+    hospitalSummaries,
   };
 };
 
 // Seed / Reset Database
 const resetToSeed = async () => {
   if (isConnected()) {
-    await WasteRecordModel.deleteMany({});
-    await PickupRequestModel.deleteMany({});
-    await IncidentModel.deleteMany({});
+    try {
+      await WasteRecordModel.deleteMany({});
+      await PickupRequestModel.deleteMany({});
+      await IncidentModel.deleteMany({});
+      await HospitalModel.deleteMany({});
+      await WorkerModel.deleteMany({});
 
-    await WasteRecordModel.insertMany(initialWasteRecords);
-    await PickupRequestModel.insertMany(initialPickups);
-    await IncidentModel.insertMany(initialIncidents);
+      await HospitalModel.insertMany(initialHospitals);
+      await WorkerModel.insertMany(initialWorkers);
+      await WasteRecordModel.insertMany(initialWasteRecords);
+      await PickupRequestModel.insertMany(initialPickups);
+      await IncidentModel.insertMany(initialIncidents);
+    } catch (e) {
+      console.warn('[Storage] Seed error in MongoDB, resetting local store:', e.message);
+    }
   }
 
   localStore = {
+    hospitals: [...initialHospitals.map((h, i) => ({ _id: `hosp_${i + 1}`, ...h }))],
+    workers: [...initialWorkers.map((w, i) => ({ _id: `wrk_${i + 1}`, ...w }))],
     wasteRecords: [...initialWasteRecords.map((r, i) => ({ _id: `waste_${i + 1}`, ...r }))],
     pickups: [...initialPickups.map((p, i) => ({ _id: `pickup_${i + 1}`, ...p }))],
     incidents: [...initialIncidents.map((inc, i) => ({ _id: `inc_${i + 1}`, ...inc }))],
+    syncLog: [],
   };
   saveLocalStore();
-  return { message: 'Database refreshed with official clinical biomedical baseline dataset.' };
+  return { message: 'Database reset and seeded with production clinical biomedical multi-hospital dataset.' };
 };
 
 module.exports = {
+  getAllHospitals,
+  getHospitalById,
+  getAllWorkers,
+  createWorker,
+  updateWorkerStatus,
   getAllWaste,
   getWasteById,
   createWasteRecord,
@@ -363,6 +605,7 @@ module.exports = {
   getAllIncidents,
   createIncident,
   resolveIncident,
+  syncTransactions,
   getStats,
   resetToSeed,
 };

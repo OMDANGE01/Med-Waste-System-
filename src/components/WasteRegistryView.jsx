@@ -48,10 +48,10 @@ export default function WasteRegistryView({
   const statuses = ['All', 'Logged', 'Awaiting Pickup', 'In Transit', 'Disposed'];
 
   // Extract unique hospital names from records
-  const uniqueHospitals = Array.from(new Set(records.map(r => r.hospitalName || 'St. Jude Memorial Hospital'))).filter(Boolean);
+  const uniqueHospitals = Array.from(new Set(records.map(r => r.hospitalName || 'Government Hospital of Khamgaon'))).filter(Boolean);
 
   const displayedRecords = records.filter(r => {
-    if (selectedHospital !== 'All' && (r.hospitalName || 'St. Jude Memorial Hospital') !== selectedHospital) {
+    if (selectedHospital !== 'All' && (r.hospitalName || 'Government Hospital of Khamgaon') !== selectedHospital) {
       return false;
     }
     return true;
@@ -396,8 +396,8 @@ export default function WasteRegistryView({
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-1.5 font-bold text-rose-400 text-xs mb-1">
                               <Building2 className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate max-w-[200px]" title={record.hospitalName || 'St. Jude Memorial Hospital'}>
-                                {record.hospitalName || 'St. Jude Memorial Hospital'}
+                              <span className="truncate max-w-[200px]" title={record.hospitalName || 'Government Hospital of Khamgaon'}>
+                                {record.hospitalName || 'Government Hospital of Khamgaon'}
                               </span>
                             </div>
                             <div className="font-medium text-slate-200 text-xs">{record.department}</div>

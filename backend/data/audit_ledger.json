@@ -1,0 +1,50 @@
+[
+  {
+    "id": "AUDIT-1790525797400-91",
+    "timestamp": "2026-09-27T16:16:37.400Z",
+    "eventType": "AUTH_FAILED_ATTEMPT",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "details": {
+      "identifier": "dr.patil@khamgaon-gov.mh.gov.in",
+      "reason": "Incorrect password"
+    },
+    "previousHash": "CPCB_KHAMGAON_GENESIS_BLOCK_2026",
+    "hash": "8e1a56163c78318dd061536762b46cacf0e6633ec41e404062be6fcd277f71ca"
+  },
+  {
+    "id": "AUDIT-1790525797516-869",
+    "timestamp": "2026-09-27T16:16:37.516Z",
+    "eventType": "SUPERINTENDENT_BOOTSTRAP",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "details": {
+      "email": "dr.patil@khamgaon-gov.mh.gov.in",
+      "name": "Dr. Ravindra Patil"
+    },
+    "previousHash": "8e1a56163c78318dd061536762b46cacf0e6633ec41e404062be6fcd277f71ca",
+    "hash": "1583f812922c5554aee86e1b3fafe19e349b21673678a8e1b2b7df135ec9d71b"
+  },
+  {
+    "id": "AUDIT-1790525797622-402",
+    "timestamp": "2026-09-27T16:16:37.621Z",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "1583f812922c5554aee86e1b3fafe19e349b21673678a8e1b2b7df135ec9d71b",
+    "hash": "b4c1ebc171d9e57ee212fe1844b7fba3ab4fc9785e07ff1fd7eb61e036b3cb8b"
+  }
+]

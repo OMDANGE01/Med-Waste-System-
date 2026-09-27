@@ -69,7 +69,7 @@ export default function BarcodeBadgeModal({ isOpen, onClose, record }) {
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="col-span-2 p-2 rounded-lg bg-slate-100 border border-slate-200">
                 <span className="text-slate-500 block text-[10px] font-semibold">HOSPITAL / FACILITY</span>
-                <strong className="text-rose-700 text-sm block truncate">{record.hospitalName || 'St. Jude Memorial Hospital'}</strong>
+                <strong className="text-rose-700 text-sm block truncate">{record.hospitalName || 'Government Hospital of Khamgaon'}</strong>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px]">DEPARTMENT</span>
@@ -91,7 +91,7 @@ export default function BarcodeBadgeModal({ isOpen, onClose, record }) {
 
             {/* Timestamps & Facility */}
             <div className="pt-2 border-t border-slate-200 text-[10px] text-slate-600 flex justify-between">
-              <span className="font-semibold">{record.hospitalName || 'St. Jude Medical Center'}</span>
+              <span className="font-semibold">{record.hospitalName || 'Government Hospital of Khamgaon'}</span>
               <span>{new Date(record.createdAt).toLocaleDateString()} {new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>

@@ -16,7 +16,10 @@ import {
   Radio, 
   HelpCircle,
   Menu,
-  X
+  X,
+  Database,
+  Building2,
+  Users
 } from 'lucide-react';
 import AppLogo from './AppLogo';
 
@@ -27,9 +30,18 @@ export default function CollapsibleSidebar({
   setActiveTab,
   onOpenLogModal,
   currentUser,
+  currentHospital,
   stats,
-  apiOnline
+  apiOnline,
+  mongoConnected
 }) {
+  const isSuperMonitor = (user) => {
+    if (!user) return false;
+    const r = (user.role || '').toLowerCase();
+    const e = (user.email || '').toLowerCase();
+    return user.hospitalId === 'ALL' || e.includes('supermonitor') || r.includes('inspector') || r.includes('directorate');
+  };
+
   const isDriver = (user) => {
     if (!user || !user.role) return false;
     const r = user.role.toLowerCase();
@@ -38,27 +50,41 @@ export default function CollapsibleSidebar({
 
   const isSupervisor = (user) => {
     if (!user || !user.role) return false;
+    if (isSuperMonitor(user)) return false;
     const r = user.role.toLowerCase();
-    return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head') || r.includes('chief') || r.includes('director') || r.includes('inspector');
+    return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head') || r.includes('doctor') || r.includes('surgeon');
   };
 
   let navItems = [];
-  if (isDriver(currentUser)) {
+  if (isSuperMonitor(currentUser)) {
     navItems = [
-      { id: 'pickups', label: 'Pickup Manifests', icon: Truck, count: stats?.recentPickupsCount },
-      { id: 'livemap', label: 'Transit GPS Route', icon: MapPin, isLive: true },
+      { id: 'supermonitor', label: 'Hospitals Network', icon: Building2 },
+      { id: 'driverroute', label: 'Multi-Hospital Route', icon: Truck, isLive: true },
+      { id: 'registry', label: 'Global Registry', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'compliance', label: 'State Audit', icon: FileCheck2 },
+      { id: 'hardware', label: 'Hardware & IoT', icon: Cpu },
+    ];
+  } else if (isDriver(currentUser)) {
+    navItems = [
+      { id: 'driverroute', label: 'Multi-Hospital Route', icon: Truck, isLive: true },
+      { id: 'pickups', label: 'Pickup Manifests', icon: ClipboardList, count: stats?.recentPickupsCount },
+      { id: 'livemap', label: 'Facility Map', icon: MapPin },
     ];
   } else if (isSupervisor(currentUser)) {
     navItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'dashboard', label: 'Hospital Dashboard', icon: LayoutDashboard },
+      { id: 'staff', label: 'Workforce Roster', icon: Users, count: stats?.totalWorkersCount },
       { id: 'registry', label: 'Waste Registry', icon: ClipboardList, count: stats?.totalBags },
-      { id: 'livemap', label: 'Live GPS Map', icon: MapPin, isLive: true },
+      { id: 'driverroute', label: 'Driver Status', icon: Truck, isLive: true },
       { id: 'compliance', label: 'Compliance & Audit', icon: FileCheck2 },
       { id: 'hardware', label: 'Hardware & IoT', icon: Cpu },
     ];
   } else {
+    // Hospital staff
     navItems = [
       { id: 'staffportal', label: 'Waste Station', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'staff', label: 'Hospital Team', icon: Users },
+      { id: 'driverroute', label: 'Driver Transit', icon: Truck },
     ];
   }
 
@@ -74,7 +100,7 @@ export default function CollapsibleSidebar({
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300 truncate">
-              Command Suite
+              {isSuperMonitor(currentUser) ? 'State Apex Grid' : 'Facility Console'}
             </span>
           </div>
         )}
@@ -159,18 +185,28 @@ export default function CollapsibleSidebar({
       {/* Sidebar Footer */}
       <div className="p-3 border-t border-slate-800/80 bg-slate-900/40">
         {!isCollapsed ? (
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
               <span>BioNet SLAM</span>
               <span className="text-emerald-400 font-bold">100% ONLINE</span>
             </div>
-            <div className="text-[11px] text-slate-300 font-medium truncate">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80">
+              <span className="flex items-center gap-1">
+                <Database className="w-3 h-3 text-slate-400" />
+                <span>Cloud Target</span>
+              </span>
+              <span className={mongoConnected ? "text-emerald-400 font-bold" : "text-sky-400 font-medium"}>
+                {mongoConnected ? "Mongo Atlas" : "Local Store"}
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-300 font-medium truncate pt-1 border-t border-slate-800/60">
               {currentUser?.name || 'Authorized User'}
             </div>
           </div>
         ) : (
-          <div className="flex justify-center" title="BioNet Telemetry Online">
+          <div className="flex flex-col items-center gap-1.5" title={`BioNet Telemetry Online • Database: ${mongoConnected ? 'MongoDB Live' : 'Resilient Local Store'}`}>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className={`w-1.5 h-1.5 rounded-full ${mongoConnected ? 'bg-emerald-400' : 'bg-sky-400'}`}></span>
           </div>
         )}
       </div>

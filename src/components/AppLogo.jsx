@@ -2,18 +2,15 @@ import React from 'react';
 
 /**
  * AppLogo Component
- * Renders the official MedWaste Guard emblem featuring:
- * - Biohazard containment trefoil arcs
- * - Medical cross intersection
- * - Protective security shield contour
- * - IoT telemetry waves and regulatory status node
+ * Official Khamgaon Bio-Medical Waste Compliance Emblem.
+ * Adheres strictly to CPCB security standards: Zero hidden gestures or secret tap triggers.
  */
 export default function AppLogo({ 
   size = 'md', 
   className = '', 
   showTelemetryPulse = false,
   withBadge = true,
-  withGlow = false 
+  withGlow = false,
 }) {
   const containerSizes = {
     xs: 'w-7 h-7 rounded-lg p-1',
@@ -35,29 +32,29 @@ export default function AppLogo({
   const selectedStar = starSizes[size] || starSizes.md;
 
   return (
-    <div className={`relative inline-flex items-center justify-center shrink-0 ${className}`}>
+    <div 
+      className={`relative inline-flex items-center justify-center shrink-0 select-none ${className}`}
+    >
       {withGlow && (
         <div 
-          className="absolute inset-0 bg-rose-500/20 dark:bg-rose-500/30 rounded-2xl blur-lg pointer-events-none transform -scale-95" 
+          className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-lg pointer-events-none transform -scale-95" 
           aria-hidden="true" 
         />
       )}
       
       {withBadge ? (
-        <div className={`${selectedContainer} bg-[#ded9d2] dark:bg-[#e2ded7] flex items-center justify-center shadow-sm transition-transform duration-200 hover:scale-105 select-none`}>
+        <div className={`${selectedContainer} bg-slate-900 border border-emerald-500/30 flex items-center justify-center shadow-md`}>
           <img
             src="/logo.svg"
-            alt="App Logo"
-            referrerPolicy="no-referrer"
+            alt="CPCB MedWaste Guard Logo"
             className={`${selectedStar} object-contain`}
           />
         </div>
       ) : (
         <img
           src="/logo.svg"
-          alt="App Logo"
-          referrerPolicy="no-referrer"
-          className={`${selectedStar} object-contain transition-transform duration-200 hover:scale-105 select-none`}
+          alt="CPCB MedWaste Guard Logo"
+          className={`${selectedStar} object-contain`}
         />
       )}
 

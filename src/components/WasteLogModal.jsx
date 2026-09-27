@@ -18,25 +18,23 @@ import {
 import QRScannerModal from './QRScannerModal';
 
 const HOSPITAL_PRESETS = [
-  { name: 'St. Jude Memorial Hospital', lat: 19.9975, lng: 73.7898 },
-  { name: 'Metro City General Hospital', lat: 20.0125, lng: 73.7650 },
-  { name: 'Apex Healthcare Research Center', lat: 19.9850, lng: 73.8120 },
-  { name: 'Apollo Super Specialty Hospital', lat: 20.0210, lng: 73.7780 },
-  { name: 'Fortis Care Medical Center', lat: 19.9760, lng: 73.8240 },
-  { name: 'Dwarka Multi-Specialty Hospital', lat: 20.0063, lng: 73.7902 },
+  { name: 'Government Hospital of Khamgaon', lat: 20.6920, lng: 76.5695 },
+  { name: 'Dwarka Hospital of Khamgaon', lat: 20.6854, lng: 76.5742 },
+  { name: 'Anand Hospital of Khamgaon', lat: 20.6812, lng: 76.5615 },
+  { name: 'Dr. Hedgewar Rugnalaya Khamgaon', lat: 20.6970, lng: 76.5720 },
 ];
 
 export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }) {
   const [formData, setFormData] = useState({
     tagId: '',
     category: 'Yellow',
-    department: 'Operating Theater',
+    department: 'Operating Theater (OT-1 & OT-2)',
     weightKg: '',
     handlerName: '',
-    hospitalName: 'St. Jude Memorial Hospital',
+    hospitalName: 'Government Hospital of Khamgaon',
     location: '',
-    lat: 19.9975,
-    lng: 73.7898,
+    lat: 20.6920,
+    lng: 76.5695,
     hazardLevel: 'Bio-Infectious Anatomical',
     notes: '',
   });
@@ -54,13 +52,13 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
       setFormData({
         tagId: editingRecord.tagId || '',
         category: editingRecord.category || 'Yellow',
-        department: editingRecord.department || 'Operating Theater',
+        department: editingRecord.department || 'Operating Theater (OT-1 & OT-2)',
         weightKg: editingRecord.weightKg?.toString() || '',
         handlerName: editingRecord.handlerName || '',
-        hospitalName: editingRecord.hospitalName || 'St. Jude Memorial Hospital',
+        hospitalName: editingRecord.hospitalName || 'Government Hospital of Khamgaon',
         location: editingRecord.location || '',
-        lat: editingRecord.lat || 19.9975,
-        lng: editingRecord.lng || 73.7898,
+        lat: editingRecord.lat || 20.6920,
+        lng: editingRecord.lng || 76.5695,
         hazardLevel: editingRecord.hazardLevel || 'Bio-Infectious Anatomical',
         notes: editingRecord.notes || '',
       });
@@ -70,13 +68,13 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
       setFormData((prev) => ({
         ...prev,
         category: 'Yellow',
-        department: 'Operating Theater',
+        department: 'Operating Theater (OT-1 & OT-2)',
         weightKg: '',
-        handlerName: 'Nurse Sarah Jenkins',
-        hospitalName: 'St. Jude Memorial Hospital',
-        location: 'OT-2 Scrub & Prep',
-        lat: 19.9975,
-        lng: 73.7898,
+        handlerName: 'Sister Sunita Tayade',
+        hospitalName: 'Government Hospital of Khamgaon',
+        location: 'OT-1 Scrub & Prep',
+        lat: 20.6920,
+        lng: 76.5695,
         hazardLevel: 'Bio-Infectious Anatomical',
         notes: '',
       }));

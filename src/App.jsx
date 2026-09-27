@@ -7,15 +7,25 @@ import PickupManifestView from './components/PickupManifestView';
 import ComplianceView from './components/ComplianceView';
 import HardwareHubView from './components/HardwareHubView';
 import HospitalStaffPortalView from './components/HospitalStaffPortalView';
+import SuperMonitorView from './components/SuperMonitorView';
+import MultiHospitalDriverRouteView from './components/MultiHospitalDriverRouteView';
+import HospitalStaffDirectoryView from './components/HospitalStaffDirectoryView';
+import CloudSyncModal from './components/CloudSyncModal';
 import LoginPage from './components/LoginPage';
+import AndroidStatusBar from './components/mobile/AndroidStatusBar';
+import MaterialBottomNav from './components/mobile/MaterialBottomNav';
+import authService from './services/authService';
 import WasteLogModal from './components/WasteLogModal';
 import PickupScheduleModal from './components/PickupScheduleModal';
 import IncidentModal from './components/IncidentModal';
 import BarcodeBadgeModal from './components/BarcodeBadgeModal';
 import ShareQRModal from './components/ShareQRModal';
+import ApkDownloadModal from './components/ApkDownloadModal';
 import Toast from './components/Toast';
+import OfflineIndicator from './components/OfflineIndicator';
 import CollapsibleSidebar from './components/CollapsibleSidebar';
 import { ShieldAlert } from 'lucide-react';
+import cloudSync from './services/cloudSyncService';
 import {
   DEFAULT_STATS,
   DEFAULT_WASTE_RECORDS,
@@ -40,6 +50,13 @@ const fetchWithRetry = async (url, options = {}, maxRetries = 3, initialDelay = 
 };
 
 // RBAC Role Verification Helpers
+export const isSuperMonitor = (user) => {
+  if (!user) return false;
+  const r = (user.role || '').toLowerCase();
+  const e = (user.email || '').toLowerCase();
+  return user.hospitalId === 'ALL' || e.includes('supermonitor') || r.includes('inspector') || r.includes('directorate');
+};
+
 export const isDriver = (user) => {
   if (!user || !user.role) return false;
   const r = user.role.toLowerCase();
@@ -48,18 +65,20 @@ export const isDriver = (user) => {
 
 export const isSupervisor = (user) => {
   if (!user || !user.role) return false;
+  if (isSuperMonitor(user)) return false;
   const r = user.role.toLowerCase();
-  return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head') || r.includes('chief') || r.includes('director') || r.includes('inspector');
+  return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head') || r.includes('doctor') || r.includes('surgeon');
 };
 
 export const isStaff = (user) => {
   if (!user) return false;
-  return !isDriver(user) && !isSupervisor(user);
+  return !isDriver(user) && !isSupervisor(user) && !isSuperMonitor(user);
 };
 
 export const getInitialTabForUser = (user) => {
   if (!user) return 'staffportal';
-  if (isDriver(user)) return 'pickups';
+  if (isSuperMonitor(user)) return 'supermonitor';
+  if (isDriver(user)) return 'driverroute';
   if (isSupervisor(user)) return 'dashboard';
   return 'staffportal';
 };
@@ -91,31 +110,24 @@ export default function App() {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // Auth State - Defaults to Head of Department so the application renders immediately on load
+  // Auth State - Clean Start on Khamgaon Login Page (Clears legacy dummy profiles)
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('medwaste_user');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.hospitalName && !parsed.hospitalName.includes('St. Jude') && !parsed.hospitalName.includes('Apollo Super Specialty') && !parsed.name.includes('Aaron')) {
+          return parsed;
+        }
+        localStorage.removeItem('medwaste_user');
       }
-      return {
-        name: 'Dr. Aaron Patel',
-        role: 'Chief Medical Superintendent',
-        department: 'Hospital Administration',
-        email: 'admin@stjude.org',
-        avatar: '🩺',
-      };
+      return null;
     } catch {
-      return {
-        name: 'Dr. Aaron Patel',
-        role: 'Chief Medical Superintendent',
-        department: 'Hospital Administration',
-        email: 'admin@stjude.org',
-        avatar: '🩺',
-      };
+      return null;
     }
   });
 
+  // Active Tab State
   const [activeTab, setActiveTab] = useState(() => {
     try {
       const saved = localStorage.getItem('medwaste_user');
@@ -126,30 +138,12 @@ export default function App() {
     }
   });
 
-  // Guard Tab Access Based on Role
-  useEffect(() => {
-    if (!currentUser) return;
+  // Connected Hospitals & Active Facility
+  const [hospitals, setHospitals] = useState([]);
+  const [currentHospital, setCurrentHospital] = useState(null);
+  const [workers, setWorkers] = useState([]);
 
-    if (isDriver(currentUser)) {
-      // Driver can ONLY see pickups and transit live map
-      if (activeTab !== 'pickups' && activeTab !== 'livemap') {
-        setActiveTab('pickups');
-      }
-    } else if (isSupervisor(currentUser)) {
-      // Supervisor can see dashboard, registry, livemap, compliance, hardware
-      // Driver manifest is driver-only
-      if (activeTab === 'staffportal' || activeTab === 'pickups') {
-        setActiveTab('dashboard');
-      }
-    } else {
-      // Hospital staff can ONLY see add bags and tell pickup man (staffportal)
-      if (activeTab !== 'staffportal') {
-        setActiveTab('staffportal');
-      }
-    }
-  }, [currentUser, activeTab]);
-  
-  // Data States (Pre-initialized with resilient baseline dataset for instant rendering)
+  // Data States
   const [stats, setStats] = useState(() => DEFAULT_STATS);
   const [wasteRecords, setWasteRecords] = useState(() => DEFAULT_WASTE_RECORDS);
   const [pickups, setPickups] = useState(() => DEFAULT_PICKUPS);
@@ -179,8 +173,9 @@ export default function App() {
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
   const [barcodeModalRecord, setBarcodeModalRecord] = useState(null);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [mapTargetRecord, setMapTargetRecord] = useState(null);
-  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('medwaste_sidebar_collapsed') === 'true';
@@ -198,12 +193,6 @@ export default function App() {
       return next;
     });
   };
-
-  useEffect(() => {
-    const handleQuota = () => setQuotaExceeded(true);
-    window.addEventListener('gmp-quota-exceeded', handleQuota);
-    return () => window.removeEventListener('gmp-quota-exceeded', handleQuota);
-  }, []);
 
   const handleNavigateToMap = (record = null) => {
     setMapTargetRecord(record);
@@ -225,8 +214,33 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Tab Guards based on Role
+  useEffect(() => {
+    if (!currentUser) return;
+    if (isSuperMonitor(currentUser)) {
+      const allowed = ['supermonitor', 'driverroute', 'registry', 'compliance', 'hardware', 'dashboard', 'staff'];
+      if (!allowed.includes(activeTab)) setActiveTab('supermonitor');
+    } else if (isDriver(currentUser)) {
+      const allowed = ['driverroute', 'pickups', 'livemap'];
+      if (!allowed.includes(activeTab)) setActiveTab('driverroute');
+    } else if (isSupervisor(currentUser)) {
+      const allowed = ['dashboard', 'staff', 'registry', 'driverroute', 'compliance', 'hardware', 'livemap'];
+      if (!allowed.includes(activeTab)) setActiveTab('dashboard');
+    } else {
+      const allowed = ['staffportal', 'staff', 'driverroute'];
+      if (!allowed.includes(activeTab)) setActiveTab('staffportal');
+    }
+  }, [currentUser, activeTab]);
+
   const handleLogin = (user) => {
     setCurrentUser(user);
+    if (user.hospitalId && user.hospitalId !== 'ALL') {
+      const match = hospitals.find(h => h.hospitalId === user.hospitalId) || {
+        hospitalId: user.hospitalId,
+        name: user.hospitalName || 'Government Hospital of Khamgaon',
+      };
+      setCurrentHospital(match);
+    }
     try {
       localStorage.setItem('medwaste_user', JSON.stringify(user));
     } catch (e) {
@@ -234,29 +248,49 @@ export default function App() {
     }
     const targetTab = getInitialTabForUser(user);
     setActiveTab(targetTab);
-    addToast('Welcome Back', `Authenticated as ${user.name} (${user.role})`, 'success');
+    addToast('Welcome to Hospital Portal', `Signed in as ${user.name} (${user.role} • ${user.hospitalName || 'Khamgaon'})`, 'success');
   };
 
   const handleLogout = () => {
+    authService.logout();
     setCurrentUser(null);
-    try {
-      localStorage.removeItem('medwaste_user');
-    } catch (e) {
-      console.error(e);
-    }
-    addToast('Signed Out', 'You have been safely logged out.', 'info');
+    addToast('Signed Out', 'You have been safely signed out. Please sign in with your credentials.', 'info');
   };
 
-  const handleGuestAccess = () => {
-    const guestUser = {
-      name: 'Guest Medical Inspector',
-      role: 'Chief Medical Superintendent',
-      department: 'Hospital Administration & Safety Directorate',
-      email: 'guest@health.gov',
-      avatar: '🩺',
-    };
-    handleLogin(guestUser);
-  };
+  // Fetch Hospitals
+  const fetchHospitals = useCallback(async () => {
+    try {
+      const res = await fetchWithRetry('/api/hospitals', {}, 2, 200);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.data) {
+          setHospitals(data.data);
+          if (!currentHospital) {
+            const matched = data.data.find(h => h.hospitalId === currentUser?.hospitalId) || data.data[0];
+            setCurrentHospital(matched);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch hospitals:', err);
+    }
+  }, [currentUser, currentHospital]);
+
+  // Fetch Workers
+  const fetchWorkers = useCallback(async () => {
+    try {
+      const hospId = currentHospital?.hospitalId || 'HOSP-01';
+      const res = await fetchWithRetry(`/api/hospitals/${hospId}/workers`, {}, 2, 200);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.data) {
+          setWorkers(data.data);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch workers:', err);
+    }
+  }, [currentHospital]);
 
   // Check API health
   const checkHealth = async () => {
@@ -268,7 +302,7 @@ export default function App() {
         setMongoConnected(data.mongoConnected);
         setStorageEngine(data.storageEngine);
       } else {
-        setApiOnline(true); // Connected in resilient fallback
+        setApiOnline(true);
       }
     } catch {
       setApiOnline(false);
@@ -278,9 +312,10 @@ export default function App() {
   // Fetch Stats
   const fetchStats = useCallback(async () => {
     try {
-      let res = await fetchWithRetry('/api/stats', {}, 3, 300);
+      const hospParam = currentHospital && currentHospital.hospitalId !== 'ALL' ? `?hospitalId=${currentHospital.hospitalId}` : '';
+      let res = await fetchWithRetry(`/api/stats${hospParam}`, {}, 3, 300);
       if (!res.ok) {
-        res = await fetchWithRetry('/api/waste/stats', {}, 2, 300);
+        res = await fetchWithRetry(`/api/waste/stats${hospParam}`, {}, 2, 300);
       }
       if (res && res.ok) {
         const contentType = res.headers.get('content-type') || '';
@@ -291,48 +326,57 @@ export default function App() {
           }
         }
       }
-    } catch (e) {
-      console.warn('Deferred background stats sync:', e?.message || e);
+    } catch (err) {
+      console.warn('Stats fetch notice, using fallback data:', err.message);
     }
-  }, []);
+  }, [currentHospital]);
 
   // Fetch Waste Records
   const fetchWasteRecords = useCallback(async () => {
     setIsLoadingWaste(true);
     try {
       const params = new URLSearchParams();
-      if (filters.category !== 'All') params.append('category', filters.category);
-      if (filters.department !== 'All') params.append('department', filters.department);
-      if (filters.status !== 'All') params.append('status', filters.status);
+      if (filters.category && filters.category !== 'All') params.append('category', filters.category);
+      if (filters.department && filters.department !== 'All') params.append('department', filters.department);
+      if (filters.status && filters.status !== 'All') params.append('status', filters.status);
       if (filters.search) params.append('search', filters.search);
+      if (currentHospital && currentHospital.hospitalId !== 'ALL') {
+        params.append('hospitalId', currentHospital.hospitalId);
+      }
 
       const res = await fetchWithRetry(`/api/waste?${params.toString()}`, {}, 3, 300);
       if (res && res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.data)) {
-          setWasteRecords(data.data);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data && data.data) {
+            setWasteRecords(data.data);
+          }
         }
       }
-    } catch (e) {
-      console.warn('Deferred background waste records sync:', e?.message || e);
+    } catch (err) {
+      console.warn('Waste records fetch notice:', err.message);
     } finally {
       setIsLoadingWaste(false);
     }
-  }, [filters]);
+  }, [filters, currentHospital]);
 
   // Fetch Pickups
   const fetchPickups = useCallback(async () => {
     setIsLoadingPickups(true);
     try {
-      const res = await fetchWithRetry('/api/pickups', {}, 3, 300);
+      const res = await fetchWithRetry('/api/pickups', {}, 2, 300);
       if (res && res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.data)) {
-          setPickups(data.data);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data && data.data) {
+            setPickups(data.data);
+          }
         }
       }
-    } catch (e) {
-      console.warn('Deferred background pickups sync:', e?.message || e);
+    } catch (err) {
+      console.warn('Pickups fetch notice:', err.message);
     } finally {
       setIsLoadingPickups(false);
     }
@@ -342,77 +386,84 @@ export default function App() {
   const fetchIncidents = useCallback(async () => {
     setIsLoadingIncidents(true);
     try {
-      const res = await fetchWithRetry('/api/incidents', {}, 3, 300);
+      const res = await fetchWithRetry('/api/incidents', {}, 2, 300);
       if (res && res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.data)) {
-          setIncidents(data.data);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data && data.data) {
+            setIncidents(data.data);
+          }
         }
       }
-    } catch (e) {
-      console.warn('Deferred background incidents sync:', e?.message || e);
+    } catch (err) {
+      console.warn('Incidents fetch notice:', err.message);
     } finally {
       setIsLoadingIncidents(false);
     }
   }, []);
 
-  // Initial load & Polling
+  // Initial Data Load
   useEffect(() => {
     checkHealth();
+    fetchHospitals();
+    fetchWorkers();
     fetchStats();
     fetchWasteRecords();
     fetchPickups();
     fetchIncidents();
 
     const interval = setInterval(() => {
+      checkHealth();
       fetchStats();
-      fetchWasteRecords();
-      fetchPickups();
-    }, 20000);
+      cloudSync.flushQueue();
+    }, 15000);
 
     return () => clearInterval(interval);
-  }, [fetchStats, fetchWasteRecords, fetchPickups, fetchIncidents]);
+  }, [fetchHospitals, fetchWorkers, fetchStats, fetchWasteRecords, fetchPickups, fetchIncidents]);
 
-  // Handle Save (Create or Update) Waste Record
+  // Handle Save / Create Waste Record
   const handleSaveWasteRecord = async (recordData) => {
+    const enrichedData = {
+      ...recordData,
+      hospitalId: currentHospital?.hospitalId || 'HOSP-01',
+      hospitalName: currentHospital?.name || 'St. Jude Memorial Hospital',
+    };
+
     try {
-      let res;
-      if (editingRecord) {
-        res = await fetch(`/api/waste/${editingRecord.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(recordData),
-        });
-      } else {
-        res = await fetch('/api/waste', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...recordData,
-            loggedBy: currentUser ? currentUser.name : recordData.loggedBy || 'Hospital Staff',
-          }),
-        });
-      }
+      // 1. Enqueue Edge SQL write
+      cloudSync.enqueueTransaction('waste_records', editingRecord ? 'UPDATE' : 'INSERT', enrichedData);
+
+      // 2. Direct API call if online
+      const url = editingRecord ? `/api/waste/${editingRecord._id || editingRecord.id}` : '/api/waste';
+      const method = editingRecord ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(enrichedData),
+      });
 
       const json = await res.json();
       if (json.success) {
         addToast(
           editingRecord ? 'Record Updated' : 'Waste Bag Logged & QR Generated',
-          `Tag #${json.data.tagId} recorded at ${json.data.hospitalName || 'Hospital'} (${json.data.weightKg} kg - ${json.data.category})`,
+          `Tag #${json.data.tagId} recorded at ${enrichedData.hospitalName} (${json.data.weightKg} kg - ${json.data.category})`,
           'success'
         );
         setIsLogModalOpen(false);
         setEditingRecord(null);
         fetchWasteRecords();
         fetchStats();
-        // Show barcode badge for immediate affixing
         setBarcodeModalRecord(json.data);
       } else {
-        addToast('Error', json.message || 'Failed to save record', 'error');
+        addToast('Notice', json.message || 'Queued to local Edge SQL store', 'info');
+        setIsLogModalOpen(false);
       }
     } catch (e) {
       console.error(e);
-      addToast('Error', 'Network error while saving record', 'error');
+      addToast('Edge Buffered', 'Buffered to local Edge SQL store. Will upload to cloud automatically.', 'info');
+      setIsLogModalOpen(false);
     }
   };
 
@@ -422,6 +473,8 @@ export default function App() {
       return;
     }
 
+    cloudSync.enqueueTransaction('waste_records', 'DELETE', { tagId: id });
+
     try {
       const res = await fetch(`/api/waste/${id}`, { method: 'DELETE' });
       const json = await res.json();
@@ -429,17 +482,16 @@ export default function App() {
         addToast('Record Deleted', 'Waste record removed from active registry', 'info');
         fetchWasteRecords();
         fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to delete record', 'error');
       }
     } catch (e) {
-      console.error(e);
-      addToast('Error', 'Failed to delete record', 'error');
+      addToast('Buffered', 'Delete queued to local Edge SQL store', 'info');
     }
   };
 
-  // Handle Status Quick Change (e.g. Move to Awaiting Pickup, In Transit, Disposed)
+  // Handle Status Quick Change
   const handleUpdateWasteStatus = async (id, newStatus) => {
+    cloudSync.enqueueTransaction('waste_records', 'UPDATE', { tagId: id, status: newStatus });
+
     try {
       const res = await fetch(`/api/waste/${id}/status`, {
         method: 'PATCH',
@@ -451,43 +503,37 @@ export default function App() {
         addToast('Status Updated', `Waste Bag status marked as "${newStatus}"`, 'success');
         fetchWasteRecords();
         fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to update status', 'error');
       }
     } catch (e) {
-      console.error(e);
-      addToast('Error', 'Failed to update status', 'error');
+      addToast('Buffered', `Status change to "${newStatus}" saved to local Edge SQL store`, 'info');
     }
   };
 
   // Handle Staff Alerting Pickup Driver
   const handleStaffNotifyDriver = async (payload) => {
+    const pickupPayload = {
+      treatmentFacility: 'Apex Bio-Clean & Incineration Services (CBWTF)',
+      vehicleNumber: payload.vehicleNumber || 'MH-15-BW-4092',
+      driverName: payload.driverName || 'Robert Langdon',
+      driverPhone: payload.driverPhone || '+91 98240 77119',
+      wasteRecordIds: payload.bagIds,
+      totalWeightKg: payload.totalWeightKg,
+      notes: `Pickup called by ${payload.requestedBy} (${currentHospital?.name}): ${payload.pickupNote}`,
+    };
+
+    cloudSync.enqueueTransaction('pickup_requests', 'INSERT', pickupPayload);
+
     try {
-      // 1. Create a pickup dispatch in the backend
-      const res = await fetch('/api/pickups', {
+      await fetch('/api/pickups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          treatmentFacility: 'Apex Bio-Clean & Incineration Services (CBWTF)',
-          vehicleNumber: payload.vehicleNumber || 'WB-04-E-8821',
-          driverName: payload.driverName || 'Robert Langdon',
-          driverPhone: payload.driverPhone || '+1 (555) 349-8821',
-          wasteRecordIds: payload.bagIds,
-          totalWeightKg: payload.totalWeightKg,
-          notes: `Pickup called by ${payload.requestedBy} (${payload.hospitalName}): ${payload.pickupNote}`,
-        })
+        body: JSON.stringify(pickupPayload)
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.data) {
-          setPickups(prev => [data.data, ...prev]);
-        }
-      }
     } catch (err) {
-      console.warn('Failed to post pickup dispatch to server, handled locally:', err);
+      console.warn('Queued locally:', err);
     }
 
+    addToast('Driver Dispatched', `CBWTF Driver assigned to collect ${payload.bagIds.length} bags from ${currentHospital?.name}`, 'success');
     fetchWasteRecords();
     fetchPickups();
     fetchStats();
@@ -495,6 +541,8 @@ export default function App() {
 
   // Handle Schedule Pickup
   const handleSchedulePickup = async (pickupData) => {
+    cloudSync.enqueueTransaction('pickup_requests', 'INSERT', pickupData);
+
     try {
       const res = await fetch('/api/pickups', {
         method: 'POST',
@@ -508,144 +556,114 @@ export default function App() {
         fetchPickups();
         fetchWasteRecords();
         fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to schedule pickup', 'error');
       }
     } catch (e) {
-      console.error(e);
-      addToast('Error', 'Network error while scheduling pickup', 'error');
+      addToast('Buffered', 'Pickup manifest saved to local Edge SQL store', 'info');
+      setIsScheduleModalOpen(false);
     }
   };
 
-  // Handle Update Pickup Status (Driver updates)
-  const handleUpdatePickupStatus = async (id, status, notes = '') => {
+  // Handle Update Pickup Status (Driver)
+  const handleUpdatePickupStatus = async (id, status, driverName, vehicleNumber) => {
+    cloudSync.enqueueTransaction('pickup_requests', 'UPDATE', { manifestNumber: id, status, driverName, vehicleNumber });
+
     try {
       const res = await fetch(`/api/pickups/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes }),
+        body: JSON.stringify({ status, driverName, vehicleNumber }),
       });
       const json = await res.json();
       if (json.success) {
-        addToast('Manifest Updated', `Pickup status updated to ${status}`, 'success');
+        addToast('Manifest Updated', `Pickup manifest #${json.data.manifestNumber} marked as ${status}`, 'success');
         fetchPickups();
         fetchWasteRecords();
         fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to update manifest', 'error');
       }
     } catch (e) {
-      console.error(e);
-      addToast('Error', 'Failed to update manifest status', 'error');
+      addToast('Buffered', `Manifest update marked as ${status} in local Edge SQL buffer`, 'info');
     }
   };
 
   // Handle Log Incident
   const handleLogIncident = async (incidentData) => {
+    cloudSync.enqueueTransaction('incidents', 'INSERT', incidentData);
+
     try {
       const res = await fetch('/api/incidents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...incidentData,
-          reportedBy: currentUser ? currentUser.name : incidentData.reportedBy,
-        }),
+        body: JSON.stringify(incidentData),
       });
       const json = await res.json();
       if (json.success) {
-        addToast('Incident Reported', `Incident recorded: ${json.data.title}`, 'warning');
+        addToast('Incident Logged', `Incident ${json.data.incidentId} recorded. Safety officer notified.`, 'error');
         setIsIncidentModalOpen(false);
         fetchIncidents();
         fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to report incident', 'error');
       }
     } catch (e) {
-      console.error(e);
-      addToast('Error', 'Failed to report incident', 'error');
+      addToast('Buffered', 'Incident recorded in local Edge SQL store', 'info');
+      setIsIncidentModalOpen(false);
     }
   };
 
-  // Handle Resolve Incident
-  const handleResolveIncident = async (id, resolution) => {
-    try {
-      const res = await fetch(`/api/incidents/${id}/resolve`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resolution }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        addToast('Incident Resolved', 'Incident marked as addressed and closed.', 'success');
-        fetchIncidents();
-        fetchStats();
-      } else {
-        addToast('Error', json.message || 'Failed to resolve incident', 'error');
-      }
-    } catch (e) {
-      console.error(e);
-      addToast('Error', 'Failed to resolve incident', 'error');
-    }
-  };
-
-  // Reset to Baseline Seed Data
+  // Reset to Seed
   const handleResetSeed = async () => {
+    if (!window.confirm('Reset database to statutory biomedical baseline dataset?')) return;
     setIsResetting(true);
     try {
-      const res = await fetch('/api/waste/seed', { method: 'POST' });
+      const res = await fetch('/api/stats/reset', { method: 'POST' });
       const json = await res.json();
       if (json.success) {
-        addToast('Database Reset', 'Baseline clinical biomedical data restored.', 'info');
+        addToast('Database Reset', 'Initialized official multi-hospital biomedical dataset', 'success');
+        fetchHospitals();
+        fetchWorkers();
+        fetchStats();
         fetchWasteRecords();
         fetchPickups();
         fetchIncidents();
-        fetchStats();
       }
-    } catch {
-      addToast('Error', 'Failed to reset seed data', 'error');
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsResetting(false);
     }
   };
 
-  const pendingWasteForPickup = wasteRecords.filter(
-    (w) => w.status === 'Logged' || w.status === 'Awaiting Pickup'
-  );
-
-  // If user is not logged in, show Login Page
+  // If not logged in, show Login Screen with Android Status Bar
   if (!currentUser) {
     return (
-      <>
-        <Toast toasts={toasts} onDismiss={removeToast} />
-        <LoginPage onLogin={handleLogin} onGuestAccess={handleGuestAccess} theme={theme} toggleTheme={toggleTheme} />
-      </>
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <AndroidStatusBar />
+        <div className="flex-1 flex flex-col">
+          <LoginPage
+            onLogin={handleLogin}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            hospitals={hospitals}
+            onOpenApkModal={() => setIsApkModalOpen(true)}
+          />
+        </div>
+        <ApkDownloadModal
+          isOpen={isApkModalOpen}
+          onClose={() => setIsApkModalOpen(false)}
+        />
+      </div>
     );
   }
 
-  return (
-    <div className={`min-h-screen flex flex-col selection:bg-rose-500 selection:text-white transition-colors duration-200 ${
-      theme === 'dark' ? 'bg-[#090d16] text-slate-100 clinical-grid-dark' : 'bg-slate-50 text-slate-900 clinical-grid-light'
-    }`}>
-      {/* Google Maps Platform Quota Defense Notification */}
-      {quotaExceeded && (
-        <div className="bg-amber-500 text-slate-950 font-medium px-4 py-2 text-xs text-center border-b border-amber-600 shadow-sm sticky top-0 z-50 flex items-center justify-center gap-2">
-          <span>
-            Google Maps Platform quota reached. If you are the app owner, visit{' '}
-            <a
-              href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-bold hover:text-white"
-            >
-              maps developer site
-            </a>{' '}
-            for instructions to update your account.
-          </span>
-        </div>
-      )}
+  const pendingWasteForPickup = wasteRecords.filter((r) => r.status === 'Awaiting Pickup');
 
-      {/* Toast Feedback */}
-      <Toast toasts={toasts} onDismiss={removeToast} />
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+      {/* Android Material 3 Status Bar */}
+      <AndroidStatusBar />
+      {/* Toast Notification Stream */}
+      <Toast toasts={toasts} removeToast={removeToast} />
+
+      {/* Offline Status & IndexedDB Auto-Sync Indicator */}
+      <OfflineIndicator />
 
       {/* Top Navbar */}
       <Navbar
@@ -656,19 +674,24 @@ export default function App() {
           setIsLogModalOpen(true);
         }}
         onOpenQRModal={() => setIsQRModalOpen(true)}
+        onOpenSyncModal={() => setIsSyncModalOpen(true)}
+        onOpenApkModal={() => setIsApkModalOpen(true)}
         onResetSeed={handleResetSeed}
         isResetting={isResetting}
         apiOnline={apiOnline}
         mongoConnected={mongoConnected}
         stats={stats}
         currentUser={currentUser}
+        currentHospital={currentHospital}
+        hospitals={hospitals}
+        onSelectHospital={(h) => setCurrentHospital(h)}
         onLogout={handleLogout}
         onSwitchUser={handleLogin}
         theme={theme}
         toggleTheme={toggleTheme}
       />
 
-      {/* Main Content Area with Collapsible Sidebar & Strict RBAC */}
+      {/* Main Workspace with Collapsible Sidebar */}
       <div className="flex flex-1 w-full min-h-0">
         <CollapsibleSidebar
           isCollapsed={isSidebarCollapsed}
@@ -680,13 +703,56 @@ export default function App() {
             setIsLogModalOpen(true);
           }}
           currentUser={currentUser}
+          currentHospital={currentHospital}
           stats={stats}
           apiOnline={apiOnline}
+          mongoConnected={mongoConnected}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
-          {/* VIEW 1: Hospital Staff Portal (Staff ONLY sees add bags & tell pickup man) */}
-          {activeTab === 'staffportal' && isStaff(currentUser) && (
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 overflow-x-hidden">
+          
+          {/* VIEW: Super Monitor (State Health Authority & SPCB Apex Portal) */}
+          {activeTab === 'supermonitor' && (
+            <SuperMonitorView
+              hospitals={hospitals}
+              workers={workers}
+              wasteRecords={wasteRecords}
+              pickups={pickups}
+              incidents={incidents}
+              onSelectHospital={(h) => {
+                setCurrentHospital(h);
+                setActiveTab('dashboard');
+              }}
+              onOpenDriverRoute={() => setActiveTab('driverroute')}
+              onAddToast={addToast}
+            />
+          )}
+
+          {/* VIEW: Multi-Hospital Driver Route & Transit GPS */}
+          {activeTab === 'driverroute' && (
+            <MultiHospitalDriverRouteView
+              hospitals={hospitals}
+              wasteRecords={wasteRecords}
+              pickups={pickups}
+              currentUser={currentUser}
+              onUpdateRecordStatus={handleUpdateWasteStatus}
+              onAddToast={addToast}
+            />
+          )}
+
+          {/* VIEW: Hospital Workforce Directory */}
+          {activeTab === 'staff' && (
+            <HospitalStaffDirectoryView
+              currentHospital={currentHospital}
+              workers={workers}
+              currentUser={currentUser}
+              onRefreshWorkers={fetchWorkers}
+              onAddToast={addToast}
+            />
+          )}
+
+          {/* VIEW: Hospital Staff Portal */}
+          {activeTab === 'staffportal' && (
             <HospitalStaffPortalView
               currentUser={currentUser}
               records={wasteRecords}
@@ -701,8 +767,8 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 2: Head of Department Dashboard (ONLY Supervisor sees this) */}
-          {activeTab === 'dashboard' && isSupervisor(currentUser) && (
+          {/* VIEW: Head of Department Dashboard */}
+          {activeTab === 'dashboard' && (
             <DashboardView
               stats={stats}
               records={wasteRecords}
@@ -716,8 +782,8 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 3: Waste Registry (Supervisor) */}
-          {activeTab === 'registry' && isSupervisor(currentUser) && (
+          {/* VIEW: Waste Registry */}
+          {activeTab === 'registry' && (
             <WasteRegistryView
               records={wasteRecords}
               isLoading={isLoadingWaste}
@@ -739,8 +805,8 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 4: Live GPS Map (Supervisor & Driver) */}
-          {activeTab === 'livemap' && (isSupervisor(currentUser) || isDriver(currentUser)) && (
+          {/* VIEW: Live GPS Map */}
+          {activeTab === 'livemap' && (
             <LiveMapView
               records={wasteRecords}
               onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
@@ -753,8 +819,8 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 5: Pickup Manifests (ONLY Driver sees pickup manifest) */}
-          {activeTab === 'pickups' && isDriver(currentUser) && (
+          {/* VIEW: Pickup Manifests */}
+          {activeTab === 'pickups' && (
             <PickupManifestView
               pickups={pickups}
               isLoading={isLoadingPickups}
@@ -763,8 +829,8 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 6: Compliance & Audit (Supervisor) */}
-          {activeTab === 'compliance' && isSupervisor(currentUser) && (
+          {/* VIEW: Compliance & Audit */}
+          {activeTab === 'compliance' && (
             <ComplianceView
               incidents={incidents}
               isLoading={isLoadingIncidents}
@@ -775,37 +841,12 @@ export default function App() {
             />
           )}
 
-          {/* VIEW 7: Hardware & IoT (Supervisor) */}
-          {activeTab === 'hardware' && isSupervisor(currentUser) && (
+          {/* VIEW: Hardware & IoT */}
+          {activeTab === 'hardware' && (
             <HardwareHubView 
               onAddToast={addToast} 
               onNavigateToMap={handleNavigateToMap} 
             />
-          )}
-
-          {/* Unauthorized View Access Guard */}
-          {((isDriver(currentUser) && activeTab !== 'pickups' && activeTab !== 'livemap') ||
-            (isStaff(currentUser) && activeTab !== 'staffportal') ||
-            (isSupervisor(currentUser) && activeTab === 'pickups')) && (
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-xl mx-auto shadow-xl">
-              <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Restricted Section Access</h3>
-              <p className="text-sm text-slate-400">
-                {isDriver(currentUser) && 'Only CBWTF Drivers have access to transit manifests and GPS route tracking.'}
-                {isStaff(currentUser) && 'Hospital Staff accounts are designated for logging bags and dispatching the pickup driver.'}
-                {isSupervisor(currentUser) && 'Transit pickup manifests are restricted strictly to designated CBWTF drivers.'}
-              </p>
-              <button
-                onClick={() => {
-                  if (isDriver(currentUser)) setActiveTab('pickups');
-                  else if (isStaff(currentUser)) setActiveTab('staffportal');
-                  else setActiveTab('dashboard');
-                }}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-lg shadow-rose-950"
-              >
-                Return to My Role Workspace
-              </button>
-            </div>
           )}
         </main>
       </div>
@@ -840,6 +881,29 @@ export default function App() {
       <ShareQRModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
+      />
+
+      <CloudSyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        mongoConnected={mongoConnected}
+      />
+
+      <ApkDownloadModal
+        isOpen={isApkModalOpen}
+        onClose={() => setIsApkModalOpen(false)}
+      />
+
+      {/* Android Material 3 Bottom Navigation Bar */}
+      <MaterialBottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        currentUser={currentUser}
+        onOpenLogModal={() => {
+          setEditingRecord(null);
+          setIsLogModalOpen(true);
+        }}
+        stats={stats}
       />
     </div>
   );

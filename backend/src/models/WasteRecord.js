@@ -37,7 +37,7 @@ const wasteRecordSchema = new mongoose.Schema(
     hospitalName: {
       type: String,
       required: true,
-      default: 'St. Jude Memorial Hospital',
+      default: 'Government Hospital of Khamgaon',
       trim: true,
     },
     location: {

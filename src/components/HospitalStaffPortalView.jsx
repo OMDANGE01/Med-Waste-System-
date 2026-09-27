@@ -46,14 +46,14 @@ export default function HospitalStaffPortalView({
 
   // Determine the hospital for current staff member
   const staffHospital = useMemo(() => {
+    if (currentUser?.hospitalName) return currentUser.hospitalName;
     if (currentUser?.hospital) return currentUser.hospital;
-    if (currentUser?.department && currentUser.department.includes('St. Jude')) return 'St. Jude Memorial Hospital';
-    return 'St. Jude Memorial Hospital';
+    return 'Government Hospital of Khamgaon';
   }, [currentUser]);
 
   // Filter bags belonging to this hospital
   const hospitalRecords = useMemo(() => {
-    return records.filter(r => (r.hospitalName || 'St. Jude Memorial Hospital') === staffHospital);
+    return records.filter(r => (r.hospitalName || 'Government Hospital of Khamgaon') === staffHospital);
   }, [records, staffHospital]);
 
   // Compute bags ready for pickup (Logged or Awaiting Pickup)

@@ -7,79 +7,52 @@ import {
   Truck, 
   FileCheck2, 
   PlusCircle, 
-  RotateCcw, 
   Menu, 
   X, 
   Activity, 
-  Database,
-  Cpu,
+  Cpu, 
   QrCode, 
   LogOut, 
   User, 
   Sun, 
-  Moon,
-  MapPin,
-  Building2,
-  Shield,
-  BellRing,
-  ChevronDown
+  Moon, 
+  MapPin, 
+  Building2, 
+  Shield, 
+  ChevronDown, 
+  Users,
+  ShieldCheck,
+  Clock,
+  Sparkles,
+  Smartphone,
+  Download
 } from 'lucide-react';
-
-const DEMO_PROFILES = [
-  {
-    name: 'Dr. Aaron Patel',
-    role: 'Chief Medical Superintendent',
-    department: 'Hospital Administration',
-    email: 'admin@stjude.org',
-    avatar: '🩺',
-    badge: 'Supervisor'
-  },
-  {
-    name: 'Robert Langdon',
-    role: 'CBWTF Transport Custodian',
-    department: 'Apex Bio-Clean Logistics',
-    email: 'driver@cbwtf.org',
-    avatar: '🚚',
-    badge: 'Driver'
-  },
-  {
-    name: 'Nurse Sarah Jenkins',
-    role: 'Clinical Staff / Nurse',
-    department: 'Operating Theater',
-    email: 'nurse@stjude.org',
-    avatar: '👩‍⚕️',
-    badge: 'Staff'
-  },
-  {
-    name: 'Officer Marcus Cole',
-    role: 'Biohazard Safety Officer',
-    department: 'Central Holding Bay',
-    email: 'officer@stjude.org',
-    avatar: '👨‍🔬',
-    badge: 'Safety'
-  }
-];
 
 export default function Navbar({ 
   activeTab, 
   setActiveTab, 
   onOpenLogModal, 
-  onOpenQRModal,
-  onResetSeed, 
-  isResetting,
-  apiOnline,
-  mongoConnected,
-  stats,
-  currentUser,
-  onLogout,
-  onSwitchUser,
-  theme,
-  toggleTheme
+  onOpenQRModal, 
+  onOpenSyncModal, 
+  onOpenApkModal,
+  stats, 
+  currentUser, 
+  currentHospital, 
+  onLogout, 
+  theme, 
+  toggleTheme 
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [profileCardOpen, setProfileCardOpen] = useState(false);
 
   // Role identification helpers
+  const isSuperMonitor = (user) => {
+    if (!user) return false;
+    const r = (user.role || '').toLowerCase();
+    const e = (user.email || '').toLowerCase();
+    return user.hospitalId === 'ALL' || e.includes('supermonitor') || r.includes('monitor') || r.includes('directorate');
+  };
+
   const isDriver = (user) => {
     if (!user || !user.role) return false;
     const r = user.role.toLowerCase();
@@ -88,75 +61,73 @@ export default function Navbar({
 
   const isSupervisor = (user) => {
     if (!user || !user.role) return false;
+    if (isSuperMonitor(user)) return false;
     const r = user.role.toLowerCase();
-    return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head') || r.includes('chief') || r.includes('director') || r.includes('inspector');
+    return r.includes('superintendent') || r.includes('supervisor') || r.includes('officer') || r.includes('admin') || r.includes('head');
   };
 
-  const isStaff = (user) => {
-    if (!user) return false;
-    return !isDriver(user) && !isSupervisor(user);
+  const isDoctorOrNurse = (user) => {
+    if (!user || !user.role) return false;
+    const r = user.role.toLowerCase();
+    return r.includes('doctor') || r.includes('surgeon') || r.includes('nurse') || r.includes('clinical');
   };
 
-  // Strictly enforce role-based nav items:
-  // - Only driver sees pickup manifest
-  // - Only supervisor sees head of department dashboard
-  // - Hospital staff can only see add bags and tell pickup man for pickup
+  // Nav items strictly scoped per role
   let navItems = [];
-  if (isDriver(currentUser)) {
+  if (isSuperMonitor(currentUser)) {
     navItems = [
-      { id: 'pickups', label: 'Pickup Manifests', icon: Truck, count: stats?.recentPickupsCount },
-      { id: 'livemap', label: 'Transit GPS Route Map', icon: MapPin, isLive: true },
+      { id: 'supermonitor', label: 'Hospitals Network', icon: Building2 },
+      { id: 'driverroute', label: 'Transit Fleet', icon: Truck, isLive: true },
+      { id: 'registry', label: 'CPCB Master Registry', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'compliance', label: 'State Audit Trail', icon: FileCheck2 },
+    ];
+  } else if (isDriver(currentUser)) {
+    navItems = [
+      { id: 'driverroute', label: 'Pickup Route', icon: Truck, isLive: true },
+      { id: 'pickups', label: 'Manifest Sign-off', icon: ClipboardList, count: stats?.recentPickupsCount },
+      { id: 'livemap', label: 'Transit GPS', icon: MapPin },
     ];
   } else if (isSupervisor(currentUser)) {
     navItems = [
-      { id: 'dashboard', label: 'Head of Dept Dashboard', icon: LayoutDashboard },
-      { id: 'registry', label: 'Waste Registry', icon: ClipboardList, count: stats?.totalBags },
-      { id: 'livemap', label: 'Live GPS Map', icon: MapPin, isLive: true },
-      { id: 'compliance', label: 'Compliance & Audit', icon: FileCheck2 },
-      { id: 'hardware', label: 'Hardware & IoT', icon: Cpu },
+      { id: 'dashboard', label: 'Superintendent Dashboard', icon: LayoutDashboard },
+      { id: 'registry', label: 'Waste Registry & 48hr Clock', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'driverroute', label: 'Transit Vans', icon: Truck, isLive: true },
+      { id: 'compliance', label: 'CPCB Compliance & Audit', icon: FileCheck2 },
+      { id: 'staff', label: 'Staff Directory', icon: Users, count: stats?.totalWorkersCount },
     ];
   } else {
-    // Hospital staff
+    // Ward Nurses, Doctors, Waste Collection Staff
     navItems = [
-      { id: 'staffportal', label: 'Hospital Waste Station', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'staffportal', label: 'Ward Station & Log', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'registry', label: 'Bag Registry', icon: ClipboardList },
+      { id: 'driverroute', label: 'Van Arrival ETA', icon: Truck },
     ];
   }
 
-  // Get human-readable role badge
-  const getRoleBadge = (user) => {
-    if (isDriver(user)) {
-      return { label: 'CBWTF Driver', color: 'bg-purple-500/15 text-purple-300 border-purple-500/30' };
-    }
-    if (isSupervisor(user)) {
-      return { label: 'Supervisor / Head of Dept', color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' };
-    }
-    return { label: 'Hospital Staff', color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' };
-  };
-
-  const roleBadge = getRoleBadge(currentUser);
-
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 dark:bg-slate-950/90 text-white backdrop-blur-md border-b border-slate-800 transition-colors shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo & Facility */}
-          <div className="flex items-center gap-3">
-            <AppLogo size="md" showTelemetryPulse={apiOnline} />
+          {/* Left: App Logo & Hospital Identity */}
+          <div className="flex items-center space-x-3">
+            <AppLogo size="sm" showTelemetryPulse={true} />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg text-white tracking-wider">MED_<span className="text-rose-500">WASTE</span></span>
-                {currentUser && (
-                  <span className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${roleBadge.color}`}>
-                    {roleBadge.label}
-                  </span>
-                )}
+                <span className="text-sm font-extrabold text-white tracking-tight">
+                  MedWaste Guard
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                  CPCB 2016
+                </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block font-medium">St. Jude Medical Center • Enterprise Biohazard System</p>
+              <p className="text-[11px] text-slate-400 truncate max-w-[220px] sm:max-w-xs">
+                {currentHospital?.name || 'Khamgaon Hospital Network'}
+              </p>
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-800/80 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-700/60">
+          {/* Center: Desktop Navigation Bar */}
+          <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -164,23 +135,20 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-rose-600 text-white shadow-sm font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700/60'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/40'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
                   {item.isLive && (
-                    <span className="flex h-2 w-2 relative">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   )}
                   {item.count !== undefined && item.count > 0 && (
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      isActive ? 'bg-white/25 text-white' : 'bg-slate-700 text-slate-300'
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                      isActive ? 'bg-emerald-700 text-white' : 'bg-slate-800 text-slate-300'
                     }`}>
                       {item.count}
                     </span>
@@ -190,240 +158,183 @@ export default function Navbar({
             })}
           </nav>
 
-          {/* Quick Actions, Theme Toggle, QR & User Profile */}
-          <div className="hidden md:flex items-center gap-2.5">
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Surgical Light' : 'Obsidian Dark'} Theme`}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 dark:text-sky-300 text-xs font-medium border border-slate-700 transition flex items-center justify-center"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-sky-300" />}
-            </button>
+          {/* Right: Actions & User Authenticated Profile */}
+          <div className="flex items-center space-x-2.5">
+            {/* APK Download Button */}
+            {onOpenApkModal && (
+              <button
+                type="button"
+                onClick={onOpenApkModal}
+                title="Download CPCB Android App (.APK)"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-emerald-400 text-xs font-semibold border border-emerald-500/30 transition shadow-sm hover:border-emerald-400/60"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Get APK</span>
+              </button>
+            )}
 
-            {/* Share QR Code Button */}
-            <button
-              onClick={onOpenQRModal}
-              title="Share app via mobile scannable QR Code"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
-            >
-              <QrCode className="w-3.5 h-3.5 text-rose-400" />
-              <span>Share QR</span>
-            </button>
+            {/* Theme Toggle */}
+            {toggleTheme && (
+              <button
+                onClick={toggleTheme}
+                title="Toggle Theme"
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700/60 transition"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-sky-400" />}
+              </button>
+            )}
 
-            {/* Log Waste Bag Button (Visible to staff & supervisors) */}
+            {/* Log Waste Bag Button (Visible to clinical staff, waste collection staff, superintendents) */}
             {!isDriver(currentUser) && (
               <button
                 onClick={onOpenLogModal}
-                className="btn-tactile flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-950/30 transition cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Log Bag</span>
+                <span className="hidden sm:inline">Log Bag</span>
               </button>
             )}
 
-            {/* User Profile Badge & Role Switcher */}
+            {/* Authenticated Staff Chip */}
             {currentUser && (
               <div className="relative">
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setRoleMenuOpen((prev) => !prev)}
-                    className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-800/80 transition group text-left"
-                    title="Switch role profile"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-rose-400 shadow-sm group-hover:border-rose-500 transition">
-                      {currentUser.avatar || currentUser.name.split(' ').map(n=>n[0]).join('').slice(0,2) || 'US'}
-                    </div>
-                    <div className="hidden xl:block text-left text-xs leading-tight">
-                      <div className="font-semibold text-white truncate max-w-[110px] flex items-center gap-1">
-                        <span>{currentUser.name.split(' ')[0]}</span>
-                        <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-white transition" />
-                      </div>
-                      <div className="text-[10px] text-slate-400 truncate max-w-[110px]">{currentUser.role.split('/')[0]}</div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={onLogout}
-                    title="Sign Out"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setProfileCardOpen((prev) => !prev)}
+                  className="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 transition text-left"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                    {currentUser.name ? currentUser.name[0] : 'U'}
+                  </div>
+                  <div className="hidden lg:block text-left text-xs leading-tight">
+                    <span className="font-semibold text-white block max-w-[100px] truncate">
+                      {currentUser.name.split(' ')[0]}
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-mono block">
+                      {currentUser.badgeNumber || 'Staff'}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
+                </button>
 
-                {/* Role Switcher Popover */}
-                {roleMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 space-y-1">
-                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
-                      <span>Switch Active Profile</span>
-                      <span className="text-rose-400">RBAC Net</span>
+                {/* Secure Profile Card (No mock switcher) */}
+                {profileCardOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg font-bold">
+                        {currentUser.avatar || '🩺'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-white truncate">{currentUser.name}</h4>
+                        <p className="text-xs text-emerald-400 font-medium truncate">{currentUser.role}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">Badge: {currentUser.badgeNumber}</p>
+                      </div>
                     </div>
-                    {DEMO_PROFILES.map((p) => {
-                      const isSelected = currentUser.email === p.email;
-                      return (
-                        <button
-                          key={p.email}
-                          type="button"
-                          onClick={() => {
-                            if (onSwitchUser) onSwitchUser(p);
-                            setRoleMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left transition ${
-                            isSelected
-                              ? 'bg-rose-600/20 border border-rose-500/40 text-white'
-                              : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                          }`}
-                        >
-                          <span className="text-base">{p.avatar}</span>
-                          <div className="truncate flex-1">
-                            <div className="text-xs font-semibold truncate">{p.name}</div>
-                            <div className="text-[10px] text-slate-400 truncate">{p.badge}</div>
-                          </div>
-                          {isSelected && <span className="text-[10px] text-rose-400 font-bold">Active</span>}
-                        </button>
-                      );
-                    })}
+
+                    <div className="py-3 space-y-1.5 text-xs text-slate-400 border-b border-slate-800">
+                      <div>
+                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Facility</span>
+                        <span className="text-slate-200 font-medium">{currentUser.hospitalName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Department</span>
+                        <span className="text-slate-200">{currentUser.department || 'General Ward'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Session Security</span>
+                        <span className="text-emerald-400 font-mono text-[11px] flex items-center gap-1">
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>JWT Authenticated</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          setProfileCardOpen(false);
+                          if (onLogout) onLogout();
+                        }}
+                        className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold text-xs border border-rose-500/20 transition cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out Securely</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             )}
-          </div>
 
-          {/* Mobile menu trigger */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button
-              onClick={onOpenQRModal}
-              className="p-2 rounded-lg bg-slate-800 text-slate-300"
-              title="QR Code"
-            >
-              <QrCode className="w-5 h-5 text-rose-400" />
-            </button>
-            {!isDriver(currentUser) && (
-              <button
-                onClick={onOpenLogModal}
-                className="p-2 rounded-lg bg-rose-600 text-white"
-                title="Log Waste"
-              >
-                <PlusCircle className="w-5 h-5" />
-              </button>
-            )}
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+              className="md:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-800 bg-slate-900 px-4 pt-2 pb-4 space-y-2">
-          {currentUser && (
-            <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between mb-2">
-              <div className="text-xs">
-                <span className="text-slate-400 block text-[10px]">Logged in as</span>
-                <span className="font-bold text-white">{currentUser.name}</span>
-                <span className="text-[11px] text-rose-400 block">{currentUser.role}</span>
-              </div>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${roleBadge.color}`}>
-                {roleBadge.label}
-              </span>
-            </div>
-          )}
-
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium ${
-                  isActive ? 'bg-rose-600 text-white' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </div>
-                {item.count !== undefined && item.count > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 border border-slate-700">
-                    {item.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-
-          <div className="pt-3 border-t border-slate-800 space-y-2">
-            {/* Quick Profile Switcher for Mobile */}
-            <div className="space-y-1.5">
-              <div className="text-[10px] uppercase font-bold text-slate-400 px-1">Switch Active Role</div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {DEMO_PROFILES.map((p) => {
-                  const isSelected = currentUser?.email === p.email;
-                  return (
-                    <button
-                      key={p.email}
-                      type="button"
-                      onClick={() => {
-                        if (onSwitchUser) onSwitchUser(p);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`p-2 rounded-xl text-left border text-xs transition flex items-center gap-1.5 ${
-                        isSelected
-                          ? 'bg-rose-600 text-white border-rose-500 font-bold'
-                          : 'bg-slate-800 border-slate-700 text-slate-300'
-                      }`}
-                    >
-                      <span className="text-sm">{p.avatar}</span>
-                      <span className="truncate">{p.badge}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                onOpenQRModal();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 text-slate-200 text-xs font-semibold"
-            >
-              <QrCode className="w-4 h-4 text-rose-400" />
-              <span>Share App via Mobile QR Code</span>
-            </button>
-
-            {currentUser && (
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-850 border border-slate-800">
-                <div className="flex items-center gap-2 text-xs">
-                  <span>{currentUser.avatar || '👤'}</span>
-                  <div>
-                    <div className="font-semibold text-white">{currentUser.name}</div>
-                    <div className="text-[10px] text-slate-400">{currentUser.role}</div>
-                  </div>
-                </div>
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-slate-800 space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
                 <button
+                  key={item.id}
                   onClick={() => {
-                    onLogout();
+                    setActiveTab(item.id);
                     setMobileMenuOpen(false);
                   }}
-                  className="px-2.5 py-1 rounded bg-rose-950/60 text-rose-400 text-xs font-semibold border border-rose-500/30"
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold ${
+                    isActive ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                  }`}
                 >
-                  Logout
+                  <div className="flex items-center space-x-2.5">
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.count !== undefined && item.count > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300">
+                      {item.count}
+                    </span>
+                  )}
                 </button>
-              </div>
+              );
+            })}
+
+            {onOpenApkModal && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenApkModal();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-950/40 text-emerald-300 border border-emerald-500/30"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                  <span>Download Android App (.APK)</span>
+                </div>
+                <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 font-mono">v1.0.0</span>
+              </button>
             )}
+
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-rose-500/10 text-rose-400 text-xs font-semibold border border-rose-500/20"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }

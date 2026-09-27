@@ -49,66 +49,56 @@ import {
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-// Predefined Network Hospitals under the Biohazard System Net
+// Predefined Network Hospitals under the Khamgaon Biohazard System Net
 const DEFAULT_NETWORK_HOSPITALS = [
   {
-    name: 'St. Jude Memorial Hospital',
-    code: 'NET-HOSP-01',
-    address: 'Plot 42, Health City, West Zone',
-    lat: 19.9975,
-    lng: 73.7898,
-    type: 'Apex Multispecialty Center',
-    bedCapacity: 650,
+    name: 'Government Hospital of Khamgaon',
+    code: 'MPCB-KHM-GOV-2024',
+    address: 'Jalamb Road, Near Civil Lines, Khamgaon, MH 444303',
+    lat: 20.6920,
+    lng: 76.5695,
+    type: 'Government Sub-District Hospital',
+    bedCapacity: 200,
     status: 'Operational'
   },
   {
-    name: 'Metro City General Hospital',
-    code: 'NET-HOSP-02',
-    address: 'Sector 8, Civil Hospital Road',
-    lat: 20.0125,
-    lng: 73.7650,
-    type: 'Government Teaching Hospital',
-    bedCapacity: 920,
+    name: 'Dwarka Hospital of Khamgaon',
+    code: 'MPCB-KHM-DWK-2023',
+    address: 'Near New Bus Stand, Nandura Road, NH-53, Khamgaon, MH 444303',
+    lat: 20.6854,
+    lng: 76.5742,
+    type: 'Private Multispeciality Hospital',
+    bedCapacity: 120,
     status: 'Operational'
   },
   {
-    name: 'Apollo Super Specialty Hospital',
-    code: 'NET-HOSP-03',
-    address: 'Ring Road Medical Corridor',
-    lat: 20.0210,
-    lng: 73.7780,
-    type: 'Tertiary Care Super Specialty',
-    bedCapacity: 450,
+    name: 'Anand Hospital of Khamgaon',
+    code: 'MPCB-KHM-AND-2022',
+    address: 'Ghatpuri Naka, Balaji Plots, Khamgaon, MH 444303',
+    lat: 20.6812,
+    lng: 76.5615,
+    type: 'Accident & Trauma Hospital',
+    bedCapacity: 80,
     status: 'Operational'
   },
   {
-    name: 'Apex Healthcare Research Center',
-    code: 'NET-HOSP-04',
-    address: 'Innovation Park, East Campus',
-    lat: 19.9850,
-    lng: 73.8120,
-    type: 'Research & Pathology Institute',
-    bedCapacity: 300,
-    status: 'Operational'
-  },
-  {
-    name: 'Fortis Care Medical Center',
-    code: 'NET-HOSP-05',
-    address: 'South Arterial Highway Sector 4',
-    lat: 19.9760,
-    lng: 73.8240,
-    type: 'Emergency & Trauma Hospital',
-    bedCapacity: 500,
+    name: 'Dr. Hedgewar Rugnalaya Khamgaon',
+    code: 'MPCB-KHM-HDG-2024',
+    address: 'Station Road, Opposite Railway Colony, Khamgaon, MH 444303',
+    lat: 20.6970,
+    lng: 76.5720,
+    type: 'Charitable Trust Hospital',
+    bedCapacity: 100,
     status: 'Operational'
   }
 ];
 
 const CBWTF_PLANT = {
-  name: 'Apex Central CBWTF Treatment Plant',
+  name: 'Khamgaon Central CBWTF Treatment Plant',
   type: 'CBWTF_PLANT',
-  lat: 20.0350,
-  lng: 73.8450,
-  description: 'Regional High-Temp Incineration, Autoclave & Shredding Facility'
+  lat: 20.6720,
+  lng: 76.5450,
+  description: 'Regional High-Temp Incineration, Autoclave & Shredding Facility (MIDC Industrial Area)'
 };
 
 function MapController({ focusedLocation }) {
@@ -323,14 +313,14 @@ export default function DashboardView({
     });
 
     records.forEach(r => {
-      const name = r.hospitalName || 'St. Jude Memorial Hospital';
+      const name = r.hospitalName || 'Government Hospital of Khamgaon';
       if (!map.has(name)) {
         map.set(name, {
           name,
-          code: `NET-HOSP-0${map.size + 1}`,
-          address: r.location || 'Network Health Facility',
-          lat: r.lat || 19.9975,
-          lng: r.lng || 73.7898,
+          code: `KHM-HOSP-0${map.size + 1}`,
+          address: r.location || 'Khamgaon Healthcare Facility',
+          lat: r.lat || 20.6869,
+          lng: r.lng || 76.5670,
           type: 'Affiliated Healthcare Facility',
           totalWeightKg: 0,
           totalBags: 0,
@@ -864,11 +854,13 @@ export default function DashboardView({
             {API_KEY ? (
               <APIProvider apiKey={API_KEY}>
                 <GoogleMap
-                  defaultCenter={{ lat: 19.9975, lng: 73.7898 }}
-                  defaultZoom={12}
+                  defaultCenter={{ lat: 20.6869, lng: 76.5670 }}
+                  defaultZoom={13}
+                  mapId="DEMO_MAP_ID"
+                  internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
                   gestureHandling="greedy"
                   disableDefaultUI={false}
-                  className="w-full h-full"
+                  style={{ width: '100%', height: '100%' }}
                 >
                   <MapController focusedLocation={focusedLocation} />
                   
