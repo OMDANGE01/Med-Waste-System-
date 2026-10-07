@@ -124,7 +124,7 @@ This concurrently boots:
 
 ## 📡 Physical Hardware & IoT Endpoints (M2M)
 
-### Push Live Scale Weight (from ESP32 / Arduino / Digital Scale):
+### Push Live Scale Weight (from ESP32 / Arduino / weight cell ):
 ```bash
 curl -X POST http://localhost:5000/api/hardware/scale \
   -H "Content-Type: application/json" \
@@ -154,4 +154,3 @@ curl -X POST http://localhost:5000/api/hardware/calibrate
 | **CBWTF Transport Driver** | `driver@cbwtf.org` | `password123` |
 | **Medical Superintendent** | `admin@stjude.org` | `password123` |
 
-*(You can also click any of the 1-Click Role Login buttons on the login screen!)
