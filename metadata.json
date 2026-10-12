@@ -3,6 +3,7 @@
   "description": "Healthcare Biomedical Waste Tracking, Hospital Bag Geolocation, Hardware IoT Telemetry, and Regulatory Compliance Platform adhering to CPCB and WHO biohazard guidelines.",
   "requestFramePermissions": [
     "geolocation"
+
   ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
