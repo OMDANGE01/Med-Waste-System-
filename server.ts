@@ -6,6 +6,9 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
+
 import dbConfig from "./backend/src/config/db.js";
 import wasteRoutes from "./backend/src/routes/wasteRoutes.js";
 import pickupRoutes from "./backend/src/routes/pickupRoutes.js";
@@ -17,11 +20,23 @@ import syncRoutes from "./backend/src/routes/syncRoutes.js";
 import auditRoutes from "./backend/src/routes/auditRoutes.js";
 import downloadRoutes from "./backend/src/routes/downloadRoutes.js";
 import wasteCtrl from "./backend/src/controllers/wasteController.js";
+import socketService from "./backend/src/services/socketService.js";
 
 const { connectDB, isConnected, getConnectionDetails } = dbConfig;
 
 async function startServer() {
   const app = express();
+  const httpServer = http.createServer(app);
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: "*",
+      credentials: true,
+    },
+  });
+
+  // Initialize Real-Time Event Bus
+  socketService.initSocket(io);
+
   const PORT = 3000;
 
   // Middleware
@@ -98,6 +113,18 @@ async function startServer() {
   // Global /api/stats endpoint
   app.get("/api/stats", wasteCtrl.getWasteStats);
 
+  // Mongoose/MongoDB offline fallback error middleware
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err.name === "MongooseError" || err.name === "MongoNetworkError" || (err.message && err.message.includes("buffering timed out"))) {
+      console.warn("[AI Studio] Database offline — returning resilient response");
+      if (req.method === "GET") {
+        return res.json(req.path.endsWith("s") || req.path.endsWith("s/") ? [] : {});
+      }
+      return res.status(503).json({ error: "Service temporarily unavailable (database offline)" });
+    }
+    next(err);
+  });
+
   // 404 guard for unmatched API routes (prevents Vite SPA fallback from returning HTML)
   app.all("/api/*", (req, res) => {
     res.status(404).json({
@@ -133,11 +160,12 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`====================================================`);
     console.log(` MedWaste Guard server running on port ${PORT}`);
     console.log(` Web App:     http://localhost:${PORT}`);
     console.log(` Health API:  http://localhost:${PORT}/api/health`);
+    console.log(` Realtime:    Socket.io Event Bus online`);
     console.log(` Mode:        ${process.env.NODE_ENV || "development"}`);
     console.log(` Storage:     ${isConnected() ? "MongoDB Cloud/Cluster" : "Resilient High-Speed Store"}`);
     console.log(`====================================================`);

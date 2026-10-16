@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ override: true });
 
+// CRITICAL: fail fast, do not hang on buffered commands when MongoDB is offline
+mongoose.set('bufferCommands', false);
+
 let mongoConnected = false;
 let lastError = null;
 let activeDatabaseName = null;

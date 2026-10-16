@@ -26,8 +26,13 @@ const wasteRecordSchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ['Logged', 'Awaiting Pickup', 'In Transit', 'Disposed'],
+      enum: ['Logged', 'Awaiting Pickup', 'In Transit', 'Collected', 'Delivered', 'Disposed'],
       default: 'Logged',
+    },
+    qrCodeUrl: {
+      type: String,
+      default: '',
+      trim: true,
     },
     handlerName: {
       type: String,
@@ -61,6 +66,12 @@ const wasteRecordSchema = new mongoose.Schema(
     notes: {
       type: String,
       default: '',
+    },
+    collectedAt: {
+      type: Date,
+    },
+    deliveredAt: {
+      type: Date,
     },
     disposedAt: {
       type: Date,

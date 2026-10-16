@@ -341,161 +341,267 @@ export default function WasteRegistryView({
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-850/50 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      <th className="py-3.5 px-4">Tag / Barcode</th>
-                      <th className="py-3.5 px-4">Category</th>
-                      <th className="py-3.5 px-4">Hospital & Department Location</th>
-                      <th className="py-3.5 px-4">Weight</th>
-                      <th className="py-3.5 px-4">Handler</th>
-                      <th className="py-3.5 px-4">Status & Action</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-sm">
-                    {displayedRecords.map((record) => {
-                      const catInfo = getCategoryBadge(record.category);
-                      const isConfirmingDelete = deleteConfirmId === record._id;
+              <div>
+                {/* Desktop View: Full Data Grid Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        <th className="py-3.5 px-4">Tag / Barcode</th>
+                        <th className="py-3.5 px-4">Category</th>
+                        <th className="py-3.5 px-4">Hospital & Department Location</th>
+                        <th className="py-3.5 px-4">Weight</th>
+                        <th className="py-3.5 px-4">Handler</th>
+                        <th className="py-3.5 px-4">Status & Action</th>
+                        <th className="py-3.5 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                      {displayedRecords.map((record) => {
+                        const catInfo = getCategoryBadge(record.category);
+                        const isConfirmingDelete = deleteConfirmId === record._id;
 
-                      return (
-                        <tr key={record._id} className="hover:bg-slate-800/40 transition">
-                          {/* Tag ID */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => onViewBarcode(record)}
-                                title="View barcode tag"
-                                className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
-                              >
-                                <QrCode className="w-4 h-4" />
-                              </button>
-                              <div>
-                                <span className="font-mono font-semibold text-white">{record.tagId}</span>
-                                <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                                  <Calendar className="w-3 h-3" />
-                                  {new Date(record.createdAt).toLocaleDateString()} {new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        return (
+                          <tr key={record._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                            {/* Tag ID */}
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => onViewBarcode(record)}
+                                  title="View barcode tag"
+                                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+                                >
+                                  <QrCode className="w-4 h-4" />
+                                </button>
+                                <div>
+                                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{record.tagId}</span>
+                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(record.createdAt).toLocaleDateString()} {new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          {/* Category */}
-                          <td className="py-3.5 px-4">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${catInfo.badgeColor}`}>
-                              <span className={`w-2 h-2 rounded-full ${catInfo.dot}`}></span>
-                              {record.category}
-                            </span>
-                            <div className="text-[11px] text-slate-400 mt-1 max-w-[160px] truncate" title={record.hazardLevel || catInfo.label}>
-                              {record.hazardLevel || catInfo.label}
-                            </div>
-                          </td>
-
-                          {/* Hospital & Department Location */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-1.5 font-bold text-rose-400 text-xs mb-1">
-                              <Building2 className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate max-w-[200px]" title={record.hospitalName || 'Government Hospital of Khamgaon'}>
-                                {record.hospitalName || 'Government Hospital of Khamgaon'}
+                            {/* Category */}
+                            <td className="py-3.5 px-4">
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${catInfo.badgeColor}`}>
+                                <span className={`w-2 h-2 rounded-full ${catInfo.dot}`}></span>
+                                {record.category}
                               </span>
-                            </div>
-                            <div className="font-medium text-slate-200 text-xs">{record.department}</div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                              <MapPin className="w-3 h-3 text-slate-500 shrink-0" />
-                              <span className="truncate max-w-[180px]">{record.location}</span>
-                            </div>
-                          </td>
-
-                          {/* Weight */}
-                          <td className="py-3.5 px-4">
-                            <div className="inline-flex items-baseline gap-1 font-bold text-white text-base">
-                              {record.weightKg}
-                              <span className="text-xs font-normal text-slate-400">kg</span>
-                            </div>
-                            {record.notes && (
-                              <div className="text-[11px] text-slate-400 truncate max-w-[160px]" title={record.notes}>
-                                {record.notes}
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-[160px] truncate" title={record.hazardLevel || catInfo.label}>
+                                {record.hazardLevel || catInfo.label}
                               </div>
-                            )}
-                          </td>
+                            </td>
 
-                          {/* Handler */}
-                          <td className="py-3.5 px-4">
-                            <div className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                              <User className="w-3.5 h-3.5 text-slate-500" />
-                              <span>{record.handlerName}</span>
-                            </div>
-                          </td>
+                            {/* Hospital & Department Location */}
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-1.5 font-bold text-rose-600 dark:text-rose-400 text-xs mb-1">
+                                <Building2 className="w-3.5 h-3.5 shrink-0" />
+                                <span className="truncate max-w-[200px]" title={record.hospitalName || 'Government Hospital of Khamgaon'}>
+                                  {record.hospitalName || 'Government Hospital of Khamgaon'}
+                                </span>
+                              </div>
+                              <div className="font-medium text-slate-800 dark:text-slate-200 text-xs">{record.department}</div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate max-w-[180px]">{record.location}</span>
+                              </div>
+                            </td>
 
-                          {/* Status & Quick Action */}
-                          <td className="py-3.5 px-4">
-                            <select
-                              value={record.status}
-                              onChange={(e) => onUpdateStatus(record._id, e.target.value)}
-                              className={`text-xs font-semibold py-1 px-2.5 rounded-lg border focus:outline-none bg-slate-800 ${getStatusBadge(record.status)}`}
-                            >
-                              <option value="Logged">Logged</option>
-                              <option value="Awaiting Pickup">Awaiting Pickup</option>
-                              <option value="In Transit">In Transit</option>
-                              <option value="Disposed">Disposed</option>
-                            </select>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {onNavigateToMap && (
-                                <button
-                                  onClick={() => onNavigateToMap(record)}
-                                  title="View on GPS Route Map"
-                                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 hover:text-white transition"
-                                >
-                                  <Navigation className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => onEditRecord(record)}
-                                title="Edit Record"
-                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-
-                              {isConfirmingDelete ? (
-                                <div className="flex items-center gap-1 animate-fade-in">
-                                  <button
-                                    onClick={() => {
-                                      onDeleteRecord(record._id);
-                                      setDeleteConfirmId(null);
-                                    }}
-                                    className="px-2 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-bold"
-                                  >
-                                    Confirm
-                                  </button>
-                                  <button
-                                    onClick={() => setDeleteConfirmId(null)}
-                                    className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs"
-                                  >
-                                    Cancel
-                                  </button>
+                            {/* Weight */}
+                            <td className="py-3.5 px-4">
+                              <div className="inline-flex items-baseline gap-1 font-bold text-slate-900 dark:text-white text-base font-mono">
+                                {record.weightKg}
+                                <span className="text-xs font-normal text-slate-500 dark:text-slate-400">kg</span>
+                              </div>
+                              {record.notes && (
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[160px]" title={record.notes}>
+                                  {record.notes}
                                 </div>
-                              ) : (
-                                <button
-                                  onClick={() => setDeleteConfirmId(record._id)}
-                                  title="Delete Record"
-                                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
                               )}
+                            </td>
+
+                            {/* Handler */}
+                            <td className="py-3.5 px-4">
+                              <div className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                                <User className="w-3.5 h-3.5 text-slate-400" />
+                                <span>{record.handlerName}</span>
+                              </div>
+                            </td>
+
+                            {/* Status & Quick Action */}
+                            <td className="py-3.5 px-4">
+                              <select
+                                value={record.status}
+                                onChange={(e) => onUpdateStatus(record._id, e.target.value)}
+                                className={`text-xs font-semibold py-1.5 px-2.5 rounded-lg border focus:outline-none ${getStatusBadge(record.status)}`}
+                              >
+                                <option value="Logged">Logged</option>
+                                <option value="Awaiting Pickup">Awaiting Pickup</option>
+                                <option value="In Transit">In Transit</option>
+                                <option value="Disposed">Disposed</option>
+                              </select>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {onNavigateToMap && (
+                                  <button
+                                    onClick={() => onNavigateToMap(record)}
+                                    title="View on GPS Route Map"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-500 transition"
+                                  >
+                                    <Navigation className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => onEditRecord(record)}
+                                  title="Edit Record"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+
+                                {isConfirmingDelete ? (
+                                  <div className="flex items-center gap-1 animate-fade-in">
+                                    <button
+                                      onClick={() => {
+                                        onDeleteRecord(record._id);
+                                        setDeleteConfirmId(null);
+                                      }}
+                                      className="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold"
+                                    >
+                                      Confirm
+                                    </button>
+                                    <button
+                                      onClick={() => setDeleteConfirmId(null)}
+                                      className="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setDeleteConfirmId(record._id)}
+                                    title="Delete Record"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-500/20 text-slate-400 hover:text-rose-500 transition"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View: Touch-Friendly Card Grid (< 768px) */}
+                <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 space-y-3">
+                  {displayedRecords.map((record) => {
+                    const catInfo = getCategoryBadge(record.category);
+                    const isConfirmingDelete = deleteConfirmId === record._id;
+
+                    return (
+                      <div key={record._id} className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => onViewBarcode(record)}
+                              title="View barcode tag"
+                              className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-2xs"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </button>
+                            <div>
+                              <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">{record.tagId}</span>
+                              <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(record.createdAt).toLocaleDateString()} {new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${catInfo.badgeColor}`}>
+                            <span className={`w-2 h-2 rounded-full ${catInfo.dot}`}></span>
+                            {record.category}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                          <div>
+                            <span className="text-[10px] uppercase font-mono text-slate-400 block">Department & Hospital</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">{record.department}</span>
+                            <span className="text-[11px] text-slate-500 block truncate max-w-[180px]">{record.hospitalName}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] uppercase font-mono text-slate-400 block">Weight</span>
+                            <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">{record.weightKg} <span className="text-xs font-normal text-slate-500">kg</span></span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                          <select
+                            value={record.status}
+                            onChange={(e) => onUpdateStatus(record._id, e.target.value)}
+                            className={`flex-1 text-xs font-semibold py-2 px-3 rounded-xl border focus:outline-none ${getStatusBadge(record.status)}`}
+                          >
+                            <option value="Logged">Logged</option>
+                            <option value="Awaiting Pickup">Awaiting Pickup</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Disposed">Disposed</option>
+                          </select>
+
+                          <div className="flex items-center gap-1">
+                            {onNavigateToMap && (
+                              <button
+                                onClick={() => onNavigateToMap(record)}
+                                className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-rose-500 shadow-2xs"
+                                title="Map Location"
+                              >
+                                <Navigation className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => onEditRecord(record)}
+                              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-2xs"
+                              title="Edit Record"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            {isConfirmingDelete ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => { onDeleteRecord(record._id); setDeleteConfirmId(null); }}
+                                  className="px-2.5 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold"
+                                >
+                                  Del
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirmId(null)}
+                                  className="px-2 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs"
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirmId(record._id)}
+                                className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 shadow-2xs"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

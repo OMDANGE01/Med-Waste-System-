@@ -8,28 +8,44 @@ import {
   AlertCircle, 
   Flashlight,
   Sparkles,
-  Barcode
+  Barcode,
+  Truck,
+  ArrowRight
 } from 'lucide-react';
 
-export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
+export default function QRScannerModal({ 
+  isOpen, 
+  onClose, 
+  onScanSuccess, 
+  onTransitionStatus,
+  records = [],
+  currentUser 
+}) {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [manualCode, setManualCode] = useState('');
-  const [torchOn, setTorchOn] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
+  const isDriverUser = currentUser && (
+    (currentUser.role || '').toLowerCase().includes('driver') ||
+    (currentUser.role || '').toLowerCase().includes('custodian') ||
+    (currentUser.role || '').toLowerCase().includes('transport')
+  );
+
   const SAMPLE_TAGS = [
-    { tagId: 'MW-2026-1001', category: 'Yellow', dept: 'Operating Theater', weight: '6.40' },
-    { tagId: 'MW-2026-1002', category: 'Red', dept: 'ICU', weight: '4.80' },
-    { tagId: 'MW-2026-1003', category: 'Red', dept: 'Emergency', weight: '2.10' },
-    { tagId: 'MW-2026-1004', category: 'Blue', dept: 'Pathology Lab', weight: '3.70' },
-    { tagId: 'MW-2026-1009', category: 'Black', dept: 'Oncology', weight: '3.40' },
-    { tagId: 'MW-2026-1010', category: 'White', dept: 'Operating Theater', weight: '1.20' },
+    { tagId: 'MW-2026-1001', category: 'Yellow', dept: 'Operating Theater', weight: '6.40', status: 'Logged' },
+    { tagId: 'MW-2026-1002', category: 'Red', dept: 'ICU', weight: '4.80', status: 'Logged' },
+    { tagId: 'MW-2026-1003', category: 'Red', dept: 'Emergency', weight: '2.10', status: 'Collected' },
+    { tagId: 'MW-2026-1004', category: 'Blue', dept: 'Pathology Lab', weight: '3.70', status: 'Logged' },
+    { tagId: 'MW-2026-1009', category: 'Black', dept: 'Oncology', weight: '3.40', status: 'Logged' },
+    { tagId: 'MW-2026-1010', category: 'White', dept: 'Operating Theater', weight: '1.20', status: 'Collected' },
   ];
 
   useEffect(() => {
     if (isOpen) {
+      setSelectedRecord(null);
       startCamera();
     } else {
       stopCamera();
@@ -50,10 +66,10 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
           setCameraActive(true);
         }
       } else {
-        setCameraError('Camera access not supported in this browser iframe. Use one-click barcode simulation below.');
+        setCameraError('Camera access not supported in this frame. Use one-click simulation below.');
       }
     } catch {
-      setCameraError('Camera permission not granted or device camera unavailable. Use one-click barcode simulation below.');
+      setCameraError('Camera permission not granted or device camera unavailable. Use one-click simulation below.');
       setCameraActive(false);
     }
   };
@@ -64,43 +80,55 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
       streamRef.current = null;
     }
     setCameraActive(false);
-    setTorchOn(false);
   };
 
   const handleSelectSample = (sample) => {
-    stopCamera();
-    onScanSuccess(sample);
-    onClose();
+    const matched = records.find(r => r.tagId === sample.tagId || r._id === sample.tagId) || sample;
+    
+    if (onTransitionStatus) {
+      setSelectedRecord(matched);
+    } else if (onScanSuccess) {
+      stopCamera();
+      onScanSuccess(sample.tagId, sample);
+      onClose();
+    }
   };
 
   const handleManualSubmit = (e) => {
     e.preventDefault();
     if (!manualCode.trim()) return;
     const tag = manualCode.trim().toUpperCase();
-    stopCamera();
-    onScanSuccess({ tagId: tag, category: 'Red', dept: 'Operating Theater', weight: '4.50' });
-    onClose();
+    const matched = records.find(r => r.tagId === tag || r._id === tag) || {
+      tagId: tag,
+      category: 'Yellow',
+      department: 'Emergency & Trauma',
+      weightKg: '4.50',
+      status: 'Logged',
+      hospitalName: 'Government Hospital of Khamgaon',
+    };
+
+    if (onTransitionStatus) {
+      setSelectedRecord(matched);
+    } else if (onScanSuccess) {
+      stopCamera();
+      onScanSuccess(tag, matched);
+      onClose();
+    }
   };
 
-  const handleRandomNew = () => {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const newTag = `MW-2026-${randomNum}`;
-    const categories = ['Yellow', 'Red', 'Blue', 'Black', 'White'];
-    const depts = ['Operating Theater', 'ICU', 'Emergency', 'Pathology Lab', 'General Ward', 'Oncology'];
-    const cat = categories[Math.floor(Math.random() * categories.length)];
-    const dept = depts[Math.floor(Math.random() * depts.length)];
-    const weight = (Math.random() * 6 + 1).toFixed(2);
-    
+  const handleExecuteTransition = (targetStatus) => {
+    if (!selectedRecord || !onTransitionStatus) return;
+    const id = selectedRecord._id || selectedRecord.tagId;
+    onTransitionStatus(id, targetStatus);
     stopCamera();
-    onScanSuccess({ tagId: newTag, category: cat, dept, weight });
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div className="relative w-full max-w-lg max-h-[92vh] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-y-auto my-auto flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
           <div className="flex items-center gap-3">
@@ -108,8 +136,12 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
               <QrCode className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">CPCB Barcode / QR Scanner</h3>
-              <p className="text-xs text-slate-400">Scan container label or select simulated RFID/QR tag</p>
+              <h3 className="font-bold text-lg text-white">
+                {isDriverUser ? 'Driver QR Barcode Scanner' : 'CPCB Barcode / QR Scanner'}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {isDriverUser ? 'Scan bags to transition: Logged → Collected → Delivered' : 'Scan container label or select simulated RFID/QR tag'}
+              </p>
             </div>
           </div>
           <button
@@ -117,26 +149,25 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
               stopCamera();
               onClose();
             }}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Viewfinder Area */}
-        <div className="relative bg-black flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
+        <div className="relative bg-black flex flex-col items-center justify-center min-h-[240px] overflow-hidden">
           {cameraActive ? (
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full h-[260px] object-cover"
+              muted
+              className="w-full h-full object-cover min-h-[240px]"
             />
           ) : (
-            <div className="p-6 text-center space-y-3">
-              <div className="inline-flex p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-slate-400">
-                <Camera className="w-10 h-10 text-rose-500 animate-pulse" />
-              </div>
+            <div className="text-center p-6 space-y-2">
+              <Camera className="w-10 h-10 text-slate-600 mx-auto animate-pulse" />
               <p className="text-xs text-slate-400 max-w-xs mx-auto">
                 {cameraError || 'Initializing video optical sensor...'}
               </p>
@@ -145,13 +176,11 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
 
           {/* Scanner Overlay HUD */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="relative w-48 h-48 border-2 border-rose-500/80 rounded-2xl shadow-[0_0_20px_rgba(225,29,72,0.4)]">
-              {/* Corner Accents */}
+            <div className="relative w-44 h-44 border-2 border-rose-500/80 rounded-2xl shadow-[0_0_20px_rgba(225,29,72,0.4)]">
               <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-rose-400"></div>
               <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-rose-400"></div>
               <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-rose-400"></div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-rose-400"></div>
-              {/* Animated Laser Scanning Line */}
               <div className="absolute left-2 right-2 h-0.5 bg-rose-400/90 shadow-[0_0_8px_#f43f5e] animate-bounce"></div>
             </div>
           </div>
@@ -165,19 +194,54 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
           </div>
         </div>
 
+        {/* Selected Scanned Record Transition Panel for Driver */}
+        {selectedRecord && (
+          <div className="p-4 bg-slate-950 border-t border-b border-rose-500/30 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-rose-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Scanned Bag: {selectedRecord.tagId}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-300">
+                Current: {selectedRecord.status || 'Logged'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-300 font-mono bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+              <div>Category: <span className="text-white font-bold">{selectedRecord.category}</span></div>
+              <div>Weight: <span className="text-white font-bold">{selectedRecord.weightKg || selectedRecord.weight} kg</span></div>
+              <div>Dept: <span className="text-white font-bold">{selectedRecord.department || selectedRecord.dept}</span></div>
+            </div>
+
+            {/* Status Transition Action Buttons */}
+            <div className="flex gap-2 pt-1">
+              {selectedRecord.status !== 'Collected' && selectedRecord.status !== 'In Transit' && (
+                <button
+                  type="button"
+                  onClick={() => handleExecuteTransition('Collected')}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md transition cursor-pointer"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Mark as "Collected"</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleExecuteTransition('Delivered')}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Mark as "Delivered"</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Quick Simulated RFID / Barcode Selection */}
         <div className="p-6 space-y-4 bg-slate-900">
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
-              <span className="uppercase tracking-wider">Fast Scan Simulation (Click to Autofill)</span>
-              <button
-                type="button"
-                onClick={handleRandomNew}
-                className="flex items-center gap-1 text-rose-400 hover:text-rose-300 font-medium"
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Generate New Bag</span>
-              </button>
+              <span className="uppercase tracking-wider">Fast Scan Simulation (Click to Select)</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {SAMPLE_TAGS.map((item) => (
@@ -185,7 +249,7 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
                   key={item.tagId}
                   onClick={() => handleSelectSample(item)}
                   type="button"
-                  className="flex flex-col text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 hover:border-rose-500/50 transition group"
+                  className="flex flex-col text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 hover:border-rose-500/50 transition group cursor-pointer"
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className="text-xs font-mono font-bold text-white group-hover:text-rose-400">
@@ -195,14 +259,13 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
                       item.category === 'Yellow' ? 'bg-amber-500/20 text-amber-300' :
                       item.category === 'Red' ? 'bg-rose-500/20 text-rose-300' :
                       item.category === 'Blue' ? 'bg-sky-500/20 text-sky-300' :
-                      item.category === 'White' ? 'bg-slate-300/20 text-slate-200' :
                       'bg-slate-700 text-slate-300'
                     }`}>
                       {item.category}
                     </span>
                   </div>
                   <span className="text-[11px] text-slate-400 truncate mt-1">
-                    {item.dept}
+                    {item.dept} • {item.weight} kg
                   </span>
                 </button>
               ))}
@@ -215,7 +278,7 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
               <Barcode className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Or type barcode tag manually (e.g. MW-2026-8800)..."
+                placeholder="Or type barcode tag manually (e.g. MW-2026-1001)..."
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 font-mono"
@@ -224,9 +287,9 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }) {
             <button
               type="submit"
               disabled={!manualCode.trim()}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-md transition"
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-md transition cursor-pointer"
             >
-              Apply Tag
+              Scan Tag
             </button>
           </form>
         </div>

@@ -87,7 +87,7 @@ export default function MaterialBottomNav({
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 border-t border-slate-800 backdrop-blur-lg pb-safe">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur-md pb-safe shadow-lg transition-colors">
       <div className="max-w-md mx-auto flex items-center justify-around px-2 py-1.5">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -97,21 +97,21 @@ export default function MaterialBottomNav({
               key={tab.id}
               type="button"
               onClick={() => handleTabClick(tab.id)}
-              className="flex-1 flex flex-col items-center justify-center py-1 transition-all group relative cursor-pointer"
+              className="flex-1 min-h-[48px] flex flex-col items-center justify-center py-1 transition-all group relative cursor-pointer"
             >
               {/* Material 3 Active Pill Indicator */}
               <div
                 className={`relative px-4 py-1 rounded-full transition-all duration-200 ${
                   isActive
-                    ? 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40'
-                    : 'text-slate-400 group-hover:text-slate-200'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 ring-1 ring-emerald-300 dark:ring-emerald-500/40'
+                    : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'scale-105' : ''} transition-transform`} />
 
                 {/* Badge count */}
                 {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500 text-slate-950 font-mono">
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-600 text-white font-mono shadow-xs">
                     {tab.badge}
                   </span>
                 )}
@@ -119,8 +119,8 @@ export default function MaterialBottomNav({
 
               {/* Label */}
               <span
-                className={`text-[10px] mt-1 font-medium tracking-tight transition-colors ${
-                  isActive ? 'text-emerald-400 font-bold' : 'text-slate-400'
+                className={`text-[10px] mt-1 tracking-tight transition-colors ${
+                  isActive ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'
                 }`}
               >
                 {tab.label}
@@ -137,13 +137,13 @@ export default function MaterialBottomNav({
               triggerHaptic();
               if (onOpenLogModal) onOpenLogModal();
             }}
-            className="flex flex-col items-center justify-center px-2 py-1 group cursor-pointer"
+            className="flex flex-col items-center justify-center px-2 py-1 group cursor-pointer min-h-[48px]"
             title="Log Bio-Medical Waste Bag"
           >
-            <div className="w-10 h-10 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-950/60 active:scale-95 transition-all">
+            <div className="w-11 h-11 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-700/25 active:scale-95 transition-all">
               <PlusCircle className="w-6 h-6" />
             </div>
-            <span className="text-[10px] mt-1 font-bold text-emerald-400">Log Bag</span>
+            <span className="text-[10px] mt-0.5 font-bold text-emerald-800 dark:text-emerald-400">Log Bag</span>
           </button>
         )}
       </div>

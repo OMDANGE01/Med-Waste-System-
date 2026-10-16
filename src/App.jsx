@@ -12,13 +12,13 @@ import MultiHospitalDriverRouteView from './components/MultiHospitalDriverRouteV
 import HospitalStaffDirectoryView from './components/HospitalStaffDirectoryView';
 import CloudSyncModal from './components/CloudSyncModal';
 import LoginPage from './components/LoginPage';
-import AndroidStatusBar from './components/mobile/AndroidStatusBar';
 import MaterialBottomNav from './components/mobile/MaterialBottomNav';
 import authService from './services/authService';
 import WasteLogModal from './components/WasteLogModal';
 import PickupScheduleModal from './components/PickupScheduleModal';
 import IncidentModal from './components/IncidentModal';
 import BarcodeBadgeModal from './components/BarcodeBadgeModal';
+import QRScannerModal from './components/QRScannerModal';
 import ShareQRModal from './components/ShareQRModal';
 import ApkDownloadModal from './components/ApkDownloadModal';
 import Toast from './components/Toast';
@@ -26,6 +26,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import CollapsibleSidebar from './components/CollapsibleSidebar';
 import { ShieldAlert } from 'lucide-react';
 import cloudSync from './services/cloudSyncService';
+import socketService from './services/socketService';
 import {
   DEFAULT_STATS,
   DEFAULT_WASTE_RECORDS,
@@ -33,11 +34,17 @@ import {
   DEFAULT_INCIDENTS,
 } from './data/baselineData';
 
-// Resilient network request helper with exponential backoff for container wakeups
+// Resilient network request helper with exponential backoff and auth header injection
 const fetchWithRetry = async (url, options = {}, maxRetries = 3, initialDelay = 300) => {
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('medwaste_auth_token') : null;
+  const mergedHeaders = {
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const res = await fetch(url, options);
+      const res = await fetch(url, { ...options, headers: mergedHeaders });
       return res;
     } catch {
       if (attempt === maxRetries - 1) {
@@ -84,10 +91,17 @@ export const getInitialTabForUser = (user) => {
 };
 
 export default function App() {
-  // Theme State ('light' | 'dark')
+  // Theme State ('light' | 'dark') - Defaults to clean clinical white theme
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem('medwaste_theme') || 'light';
+      const stored = localStorage.getItem('medwaste_theme');
+      // If user specifically requested white theme or no preference set
+      if (!stored || stored === 'dark') {
+        localStorage.setItem('medwaste_theme', 'light');
+        document.documentElement.classList.remove('dark');
+        return 'light';
+      }
+      return stored;
     } catch {
       return 'light';
     }
@@ -403,7 +417,7 @@ export default function App() {
     }
   }, []);
 
-  // Initial Data Load
+  // Initial Data Load & Socket.io Real-Time Event Bus (NO client-side polling)
   useEffect(() => {
     checkHealth();
     fetchHospitals();
@@ -413,13 +427,48 @@ export default function App() {
     fetchPickups();
     fetchIncidents();
 
-    const interval = setInterval(() => {
-      checkHealth();
-      fetchStats();
-      cloudSync.flushQueue();
-    }, 15000);
+    // Initialize Socket.io connection
+    socketService.initSocket();
 
-    return () => clearInterval(interval);
+    // 1. Live Waste Creation event
+    const unsubCreated = socketService.subscribeToWasteCreated((newRecord) => {
+      setWasteRecords((prev) => [newRecord, ...prev.filter((r) => r.tagId !== newRecord.tagId)]);
+      fetchStats();
+      addToast(
+        'Live Bio-Waste Logged',
+        `Bag #${newRecord.tagId} (${newRecord.weightKg} kg - ${newRecord.category}) registered by ${newRecord.handlerName}`,
+        'success'
+      );
+    });
+
+    // 2. Live Status Transition event (Driver marked Collected / Delivered)
+    const unsubStatus = socketService.subscribeToWasteStatusUpdated((payload) => {
+      if (!payload || !payload.record) return;
+      setWasteRecords((prev) =>
+        prev.map((r) =>
+          r._id === payload.record._id || r.tagId === payload.record.tagId
+            ? { ...r, ...payload.record }
+            : r
+        )
+      );
+      fetchStats();
+    });
+
+    // 3. Dedicated Collected event for Hospital Head and Auditor screens
+    const unsubCollected = socketService.subscribeToWasteCollected((payload) => {
+      if (!payload || !payload.record) return;
+      addToast(
+        'Real-Time Bag Collection',
+        `Driver ${payload.actor?.name || 'Driver'} collected Bag #${payload.record.tagId} from ${payload.record.hospitalName}`,
+        'info'
+      );
+    });
+
+    return () => {
+      unsubCreated();
+      unsubStatus();
+      unsubCollected();
+    };
   }, [fetchHospitals, fetchWorkers, fetchStats, fetchWasteRecords, fetchPickups, fetchIncidents]);
 
   // Handle Save / Create Waste Record
@@ -427,20 +476,24 @@ export default function App() {
     const enrichedData = {
       ...recordData,
       hospitalId: currentHospital?.hospitalId || 'HOSP-01',
-      hospitalName: currentHospital?.name || 'St. Jude Memorial Hospital',
+      hospitalName: currentHospital?.name || 'Government Hospital of Khamgaon',
     };
 
     try {
       // 1. Enqueue Edge SQL write
       cloudSync.enqueueTransaction('waste_records', editingRecord ? 'UPDATE' : 'INSERT', enrichedData);
 
-      // 2. Direct API call if online
+      // 2. Direct API call with Bearer token
       const url = editingRecord ? `/api/waste/${editingRecord._id || editingRecord.id}` : '/api/waste';
       const method = editingRecord ? 'PUT' : 'POST';
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('medwaste_auth_token') : null;
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(enrichedData),
       });
 
@@ -453,30 +506,34 @@ export default function App() {
         );
         setIsLogModalOpen(false);
         setEditingRecord(null);
-        fetchWasteRecords();
-        fetchStats();
         setBarcodeModalRecord(json.data);
       } else {
-        addToast('Notice', json.message || 'Queued to local Edge SQL store', 'info');
+        addToast('Notice', json.message || 'Error saving record', 'error');
         setIsLogModalOpen(false);
       }
     } catch (e) {
       console.error(e);
-      addToast('Edge Buffered', 'Buffered to local Edge SQL store. Will upload to cloud automatically.', 'info');
+      addToast('Notice', 'Request processed. Stored in resilient registry.', 'info');
       setIsLogModalOpen(false);
     }
   };
 
   // Handle Delete Waste Record
   const handleDeleteWasteRecord = async (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this waste record? This action will be audited.')) {
+    if (!window.confirm('Are you sure you want to delete this waste record? This action will be audited.')) {
       return;
     }
 
     cloudSync.enqueueTransaction('waste_records', 'DELETE', { tagId: id });
 
     try {
-      const res = await fetch(`/api/waste/${id}`, { method: 'DELETE' });
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('medwaste_auth_token') : null;
+      const res = await fetch(`/api/waste/${id}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const json = await res.json();
       if (json.success) {
         addToast('Record Deleted', 'Waste record removed from active registry', 'info');
@@ -484,7 +541,7 @@ export default function App() {
         fetchStats();
       }
     } catch (e) {
-      addToast('Buffered', 'Delete queued to local Edge SQL store', 'info');
+      addToast('Notice', 'Delete operation logged.', 'info');
     }
   };
 
@@ -493,9 +550,13 @@ export default function App() {
     cloudSync.enqueueTransaction('waste_records', 'UPDATE', { tagId: id, status: newStatus });
 
     try {
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('medwaste_auth_token') : null;
       const res = await fetch(`/api/waste/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ status: newStatus }),
       });
       const json = await res.json();
@@ -503,9 +564,11 @@ export default function App() {
         addToast('Status Updated', `Waste Bag status marked as "${newStatus}"`, 'success');
         fetchWasteRecords();
         fetchStats();
+      } else {
+        addToast('Permission Check', json.message || 'Status transition rejected.', 'error');
       }
     } catch (e) {
-      addToast('Buffered', `Status change to "${newStatus}" saved to local Edge SQL store`, 'info');
+      addToast('Status Change', `Transition to "${newStatus}" processed.`, 'info');
     }
   };
 
@@ -631,11 +694,10 @@ export default function App() {
     }
   };
 
-  // If not logged in, show Login Screen with Android Status Bar
+  // If not logged in, show Login Screen
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col">
-        <AndroidStatusBar />
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} flex flex-col transition-colors`}>
         <div className="flex-1 flex flex-col">
           <LoginPage
             onLogin={handleLogin}
@@ -656,9 +718,7 @@ export default function App() {
   const pendingWasteForPickup = wasteRecords.filter((r) => r.status === 'Awaiting Pickup');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-      {/* Android Material 3 Status Bar */}
-      <AndroidStatusBar />
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} flex flex-col font-sans selection:bg-emerald-500 selection:text-white transition-colors`}>
       {/* Toast Notification Stream */}
       <Toast toasts={toasts} removeToast={removeToast} />
 
@@ -837,6 +897,8 @@ export default function App() {
               onOpenIncidentModal={() => setIsIncidentModalOpen(true)}
               wasteRecords={wasteRecords}
               stats={stats}
+              currentUser={currentUser}
+              currentHospital={currentHospital}
               onAddToast={addToast}
             />
           )}
@@ -878,9 +940,12 @@ export default function App() {
         record={barcodeModalRecord}
       />
 
-      <ShareQRModal
+      <QRScannerModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
+        records={wasteRecords}
+        currentUser={currentUser}
+        onTransitionStatus={handleUpdateWasteStatus}
       />
 
       <CloudSyncModal

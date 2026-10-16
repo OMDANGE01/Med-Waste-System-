@@ -105,7 +105,9 @@ export default function Navbar({
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md">
+    <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors ${
+      theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200 shadow-xs'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Left: App Logo & Hospital Identity */}
@@ -113,14 +115,18 @@ export default function Navbar({
             <AppLogo size="sm" showTelemetryPulse={true} />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-extrabold text-white tracking-tight">
+                <span className={`text-sm font-extrabold tracking-tight ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
+                }`}>
                   MedWaste Guard
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
                   CPCB 2016
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 truncate max-w-[220px] sm:max-w-xs">
+              <p className={`text-[11px] truncate max-w-[220px] sm:max-w-xs ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              }`}>
                 {currentHospital?.name || 'Khamgaon Hospital Network'}
               </p>
             </div>
@@ -137,8 +143,10 @@ export default function Navbar({
                   onClick={() => setActiveTab(item.id)}
                   className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-700/20'
+                      : theme === 'dark'
+                        ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -148,7 +156,11 @@ export default function Navbar({
                   )}
                   {item.count !== undefined && item.count > 0 && (
                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                      isActive ? 'bg-emerald-700 text-white' : 'bg-slate-800 text-slate-300'
+                      isActive
+                        ? 'bg-emerald-700 text-white'
+                        : theme === 'dark'
+                          ? 'bg-slate-800 text-slate-300'
+                          : 'bg-slate-200 text-slate-700'
                     }`}>
                       {item.count}
                     </span>
@@ -166,9 +178,13 @@ export default function Navbar({
                 type="button"
                 onClick={onOpenApkModal}
                 title="Download CPCB Android App (.APK)"
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-emerald-400 text-xs font-semibold border border-emerald-500/30 transition shadow-sm hover:border-emerald-400/60"
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition shadow-xs ${
+                  theme === 'dark'
+                    ? 'bg-slate-800/90 hover:bg-slate-700 text-emerald-400 border-emerald-500/30'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                }`}
               >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                <Smartphone className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Get APK</span>
               </button>
             )}
@@ -178,9 +194,13 @@ export default function Navbar({
               <button
                 onClick={toggleTheme}
                 title="Toggle Theme"
-                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700/60 transition"
+                className={`p-2 rounded-xl text-xs border transition ${
+                  theme === 'dark'
+                    ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700/60'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                }`}
               >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-sky-400" />}
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
               </button>
             )}
 
@@ -188,7 +208,7 @@ export default function Navbar({
             {!isDriver(currentUser) && (
               <button
                 onClick={onOpenLogModal}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-950/30 transition cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-700/20 transition cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">Log Bag</span>
@@ -201,16 +221,22 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => setProfileCardOpen((prev) => !prev)}
-                  className="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 transition text-left"
+                  className={`flex items-center space-x-2 p-1.5 rounded-xl border transition text-left ${
+                    theme === 'dark'
+                      ? 'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700/60'
+                      : 'bg-slate-100 hover:bg-slate-200/80 border-slate-200'
+                  }`}
                 >
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
                     {currentUser.name ? currentUser.name[0] : 'U'}
                   </div>
                   <div className="hidden lg:block text-left text-xs leading-tight">
-                    <span className="font-semibold text-white block max-w-[100px] truncate">
+                    <span className={`font-semibold block max-w-[100px] truncate ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       {currentUser.name.split(' ')[0]}
                     </span>
-                    <span className="text-[10px] text-emerald-400 font-mono block">
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block">
                       {currentUser.badgeNumber || 'Staff'}
                     </span>
                   </div>
@@ -219,30 +245,40 @@ export default function Navbar({
 
                 {/* Secure Profile Card (No mock switcher) */}
                 {profileCardOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg font-bold">
+                  <div className={`absolute right-0 mt-2 w-72 border rounded-2xl shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
+                    theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+                  }`}>
+                    <div className={`flex items-center space-x-3 pb-3 border-b ${
+                      theme === 'dark' ? 'border-slate-800' : 'border-slate-100'
+                    }`}>
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg font-bold">
                         {currentUser.avatar || '🩺'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-white truncate">{currentUser.name}</h4>
-                        <p className="text-xs text-emerald-400 font-medium truncate">{currentUser.role}</p>
-                        <p className="text-[10px] text-slate-400 font-mono">Badge: {currentUser.badgeNumber}</p>
+                        <h4 className={`text-sm font-bold truncate ${
+                          theme === 'dark' ? 'text-white' : 'text-slate-900'
+                        }`}>{currentUser.name}</h4>
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate">{currentUser.role}</p>
+                        <p className={`text-[10px] font-mono ${
+                          theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                        }`}>Badge: {currentUser.badgeNumber}</p>
                       </div>
                     </div>
 
-                    <div className="py-3 space-y-1.5 text-xs text-slate-400 border-b border-slate-800">
+                    <div className={`py-3 space-y-1.5 text-xs border-b ${
+                      theme === 'dark' ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-600'
+                    }`}>
                       <div>
-                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Facility</span>
-                        <span className="text-slate-200 font-medium">{currentUser.hospitalName}</span>
+                        <span className="text-[10px] text-slate-400 uppercase block font-mono">Facility</span>
+                        <span className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>{currentUser.hospitalName}</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Department</span>
-                        <span className="text-slate-200">{currentUser.department || 'General Ward'}</span>
+                        <span className="text-[10px] text-slate-400 uppercase block font-mono">Department</span>
+                        <span className={theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}>{currentUser.department || 'General Ward'}</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 uppercase block font-mono">Session Security</span>
-                        <span className="text-emerald-400 font-mono text-[11px] flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 uppercase block font-mono">Session Security</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] flex items-center gap-1">
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>JWT Authenticated</span>
                         </span>
@@ -255,7 +291,11 @@ export default function Navbar({
                           setProfileCardOpen(false);
                           if (onLogout) onLogout();
                         }}
-                        className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold text-xs border border-rose-500/20 transition cursor-pointer"
+                        className={`w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl font-semibold text-xs border transition cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/20'
+                            : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                        }`}
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out Securely</span>
@@ -269,7 +309,9 @@ export default function Navbar({
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+              className={`md:hidden p-2 rounded-xl ${
+                theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:text-white' : 'bg-slate-100 text-slate-700 hover:text-slate-900'
+              }`}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
