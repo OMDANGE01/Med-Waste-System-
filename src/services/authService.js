@@ -4,7 +4,7 @@ export const authService = {
   /**
    * Authenticate user against the server with real password verification
    */
-  async login(identifier, password, hospitalId) {
+  async login(identifier, password, hospitalId, forceReclaim = false) {
     if (!identifier || !password) {
       return {
         success: false,
@@ -17,20 +17,24 @@ export const authService = {
         identifier: identifier.trim(),
         password: password.trim(),
         hospitalId,
+        forceReclaim: !!forceReclaim,
       });
 
       if (res && res.success && res.token && res.user) {
         this.persistSession(res.user, res.token);
-        return { success: true, user: res.user, token: res.token };
+        return { success: true, user: res.user, token: res.token, sessionId: res.sessionId };
       }
 
       return {
         success: false,
+        code: res.code,
         message: res.message || 'Authentication failed. Please verify credentials.',
       };
     } catch (err) {
       return {
         success: false,
+        code: err.data?.code,
+        status: err.status,
         message: err.message || 'Server authentication failed. Please check network connection.',
       };
     }
@@ -98,11 +102,26 @@ export const authService = {
     }
   },
 
-  logout() {
+  async logout() {
+    try {
+      const user = this.getCurrentUser();
+      const token = this.getToken();
+      if (token) {
+        await apiClient.post('/api/auth/logout', { email: user?.email }).catch(() => {});
+      }
+    } catch {}
     try {
       localStorage.removeItem('medwaste_user');
       localStorage.removeItem('medwaste_auth_token');
     } catch {}
+  },
+
+  async heartbeat() {
+    try {
+      return await apiClient.post('/api/auth/heartbeat');
+    } catch (err) {
+      return { success: false, code: err.data?.code, message: err.message };
+    }
   },
 };
 

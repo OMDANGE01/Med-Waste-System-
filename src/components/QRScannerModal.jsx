@@ -244,7 +244,17 @@ export default function QRScannerModal({
               <span className="uppercase tracking-wider">Fast Scan Simulation (Click to Select)</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {SAMPLE_TAGS.map((item) => (
+              {((records && records.length > 0) 
+                ? records.slice(0, 12).map((r) => ({
+                    tagId: r.tagId,
+                    category: r.category,
+                    dept: r.department || r.dept,
+                    weight: r.weightKg || r.weight,
+                    status: r.status,
+                    _id: r._id,
+                  }))
+                : SAMPLE_TAGS
+              ).map((item) => (
                 <button
                   key={item.tagId}
                   onClick={() => handleSelectSample(item)}
@@ -264,9 +274,10 @@ export default function QRScannerModal({
                       {item.category}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-400 truncate mt-1">
-                    {item.dept} • {item.weight} kg
-                  </span>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                    <span className="truncate">{item.dept} • {item.weight} kg</span>
+                    <span className="text-[10px] font-mono text-purple-400 font-semibold">{item.status || 'Logged'}</span>
+                  </div>
                 </button>
               ))}
             </div>

@@ -62,6 +62,22 @@ const workerSchema = new mongoose.Schema(
       type: String,
       default: '👤',
     },
+    is_logged_in: {
+      type: Boolean,
+      default: false,
+    },
+    active_session_id: {
+      type: String,
+      default: null,
+    },
+    last_active_at: {
+      type: Date,
+      default: null,
+    },
+    session_created_at: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

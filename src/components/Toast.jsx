@@ -1,8 +1,14 @@
 import React from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
-export default function Toast({ toasts, onDismiss }) {
+export default function Toast({ toasts, onDismiss, removeToast, onRemove }) {
   if (!toasts || toasts.length === 0) return null;
+
+  const handleDismiss = (id) => {
+    if (typeof onDismiss === 'function') onDismiss(id);
+    else if (typeof removeToast === 'function') removeToast(id);
+    else if (typeof onRemove === 'function') onRemove(id);
+  };
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-md w-full px-4 sm:px-0">
@@ -36,8 +42,8 @@ export default function Toast({ toasts, onDismiss }) {
               <div>{toast.message}</div>
             </div>
             <button
-              onClick={() => onDismiss(toast.id)}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              onClick={() => handleDismiss(toast.id)}
+              className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

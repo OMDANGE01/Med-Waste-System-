@@ -1,20 +1,41 @@
 import React, { useState } from 'react';
-import { X, Truck, Calendar, Phone, CheckSquare, Square, Save, AlertCircle } from 'lucide-react';
+import { X, Truck, Calendar, Phone, CheckSquare, Square, Save, AlertCircle, PlusCircle } from 'lucide-react';
 
-export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendingWaste }) {
+export default function PickupScheduleModal({ 
+  isOpen, 
+  onClose, 
+  onSchedule, 
+  pendingWaste = [],
+  onQuickLogSample 
+}) {
   const [formData, setFormData] = useState({
     treatmentFacility: 'Apex Bio-Clean & Incineration Services (CBWTF)',
     vehicleNumber: 'WB-04-E-9022',
     driverName: 'Robert Langdon',
     driverPhone: '+1 (555) 349-8821',
-    selectedTagIds: pendingWaste.map((w) => w.tagId), // Default select all eligible
+    selectedTagIds: (pendingWaste || []).map((w) => w.tagId), // Default select all eligible
     notes: '',
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Synchronize selected tags whenever modal opens or pendingWaste changes
+  React.useEffect(() => {
+    if (isOpen) {
+      const validTags = (pendingWaste || []).map((w) => w.tagId);
+      setFormData((prev) => ({
+        ...prev,
+        selectedTagIds: validTags,
+      }));
+    }
+  }, [isOpen, pendingWaste]);
+
   if (!isOpen) return null;
+
+  const validSelectedTags = formData.selectedTagIds.filter((id) =>
+    (pendingWaste || []).some((w) => w.tagId === id)
+  );
 
   const toggleTag = (tagId) => {
     setFormData((prev) => {
@@ -31,7 +52,7 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
   const selectAll = () => {
     setFormData((prev) => ({
       ...prev,
-      selectedTagIds: pendingWaste.map((w) => w.tagId),
+      selectedTagIds: (pendingWaste || []).map((w) => w.tagId),
     }));
   };
 
@@ -39,8 +60,8 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
     setFormData((prev) => ({ ...prev, selectedTagIds: [] }));
   };
 
-  const selectedTotalWeight = pendingWaste
-    .filter((w) => formData.selectedTagIds.includes(w.tagId))
+  const selectedTotalWeight = (pendingWaste || [])
+    .filter((w) => validSelectedTags.includes(w.tagId))
     .reduce((acc, w) => acc + (Number(w.weightKg) || 0), 0);
 
   const validate = () => {
@@ -171,7 +192,7 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-slate-300">
-                Select Waste Bags for Consignment ({formData.selectedTagIds.length} of {pendingWaste.length} selected)
+                Select Waste Bags for Consignment ({validSelectedTags.length} of {pendingWaste.length} selected)
               </label>
               <div className="flex items-center gap-2 text-xs">
                 <button type="button" onClick={selectAll} className="text-rose-400 hover:text-rose-300">Select All</button>
@@ -181,13 +202,28 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
             </div>
 
             {pendingWaste.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 text-center text-xs text-slate-400">
-                No bags currently in 'Logged' or 'Awaiting Pickup' status. All on-site waste is already dispatched!
+              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2.5">
+                <p className="text-xs text-slate-300 font-medium">
+                  Notice: No waste bags currently in 'Logged' or 'Awaiting Pickup' status at this facility. All on-site waste is already dispatched into transit or disposed!
+                </p>
+                {onQuickLogSample && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await onQuickLogSample();
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow cursor-pointer"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    <span>+ Generate Sample Waste Bag for Pickup</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
                 {pendingWaste.map((w) => {
-                  const isChecked = formData.selectedTagIds.includes(w.tagId);
+                  const isChecked = validSelectedTags.includes(w.tagId);
+                  const isAwaitingDisposal = w.status === 'In Transit' || w.status === 'Collected';
                   return (
                     <div
                       key={w.tagId}
@@ -196,15 +232,22 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
                         isChecked ? 'bg-slate-700 text-white' : 'hover:bg-slate-800/60 text-slate-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2.5 flex-wrap">
                         {isChecked ? (
-                          <CheckSquare className="w-4 h-4 text-rose-500" />
+                          <CheckSquare className="w-4 h-4 text-rose-500 shrink-0" />
                         ) : (
-                          <Square className="w-4 h-4 text-slate-500" />
+                          <Square className="w-4 h-4 text-slate-500 shrink-0" />
                         )}
                         <span className="font-mono font-semibold">{w.tagId}</span>
                         <span className="text-slate-400">• {w.category}</span>
                         <span className="text-slate-400">• {w.department}</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-semibold ${
+                          isAwaitingDisposal 
+                            ? 'bg-purple-950 text-purple-300 border border-purple-800/70' 
+                            : 'bg-amber-950 text-amber-300 border border-amber-800/70'
+                        }`}>
+                          {isAwaitingDisposal ? 'Awaiting Disposal (Onboard)' : w.status || 'Awaiting Pickup'}
+                        </span>
                       </div>
                       <span className="font-bold">{w.weightKg} kg</span>
                     </div>

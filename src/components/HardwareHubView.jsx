@@ -58,8 +58,6 @@ export default function HardwareHubView({ onAddToast }) {
 
   useEffect(() => {
     fetchHardware();
-    const interval = setInterval(fetchHardware, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   // Robot Command Handler

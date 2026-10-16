@@ -36,16 +36,23 @@ export default function WasteRegistryView({
   onUpdateStatus,
   onViewBarcode,
   onNavigateToMap,
-  onAddToast
+  onAddToast,
+  currentUser
 }) {
   const [activeSubTab, setActiveSubTab] = useState('registry'); // 'registry' | 'ai_vision'
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [selectedHospital, setSelectedHospital] = useState('All');
   const [showCategoryGuide, setShowCategoryGuide] = useState(false);
 
+  const isDriver = currentUser && (
+    (currentUser.role || '').toLowerCase().includes('driver') ||
+    (currentUser.role || '').toLowerCase().includes('custodian') ||
+    (currentUser.role || '').toLowerCase().includes('transport')
+  );
+
   const categories = ['All', 'Yellow', 'Red', 'Blue', 'Black'];
   const departments = ['All', 'ICU', 'Operating Theater', 'Emergency', 'Pathology Lab', 'General Ward', 'Oncology', 'Pediatrics'];
-  const statuses = ['All', 'Logged', 'Awaiting Pickup', 'In Transit', 'Disposed'];
+  const statuses = ['All', 'Logged', 'Awaiting Pickup', 'In Transit', 'Collected', 'Delivered', 'Disposed'];
 
   // Extract unique hospital names from records
   const uniqueHospitals = Array.from(new Set(records.map(r => r.hospitalName || 'Government Hospital of Khamgaon'))).filter(Boolean);
@@ -109,8 +116,10 @@ export default function WasteRegistryView({
       case 'Awaiting Pickup':
         return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
       case 'In Transit':
+      case 'Collected':
         return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
       case 'Disposed':
+      case 'Delivered':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
       default:
         return 'bg-slate-700 text-slate-300 border-slate-600';

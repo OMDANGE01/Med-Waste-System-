@@ -48,9 +48,10 @@ export default function HospitalWorkerLogin({
   });
   const [setupError, setSetupError] = useState('');
   const [setupSuccess, setSetupSuccess] = useState('');
+  const [canReclaimSession, setCanReclaimSession] = useState(false);
 
-  const handleFormLogin = async (e) => {
-    e.preventDefault();
+  const handleFormLogin = async (e, forceReclaim = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!identifier.trim()) {
       setAuthError('Please enter your staff email or assigned badge ID.');
       return;
@@ -62,19 +63,30 @@ export default function HospitalWorkerLogin({
 
     setIsLoading(true);
     setAuthError('');
+    setCanReclaimSession(false);
 
     try {
-      const result = await authService.login(identifier, password, hospital?.hospitalId);
+      const result = await authService.login(identifier, password, hospital?.hospitalId, forceReclaim);
       if (result.success && result.user) {
         onLogin(result.user);
       } else {
         setAuthError(result.message || 'Authentication failed. Please verify your credentials.');
+        if (
+          result.code === 'CONCURRENT_SESSION_ACTIVE' ||
+          (result.message && result.message.includes('already logged in'))
+        ) {
+          setCanReclaimSession(true);
+        }
       }
-    } catch (err) {
+    } catch {
       setAuthError('Could not reach authentication server. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleForceReclaimLogin = () => {
+    handleFormLogin(null, true);
   };
 
   const handleBootstrapSuperintendent = async (e) => {
@@ -214,9 +226,23 @@ export default function HospitalWorkerLogin({
         {authError && (
           <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-2.5 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-            <div>
-              <span className="font-semibold block">Authentication Error</span>
-              <span>{authError}</span>
+            <div className="flex-1 space-y-1.5">
+              <span className="font-semibold block text-rose-200">Authentication Error</span>
+              <p className="text-slate-200 leading-relaxed font-medium">{authError}</p>
+              {canReclaimSession && (
+                <div className="pt-2 border-t border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[11px] text-slate-300">
+                    Did your previous browser tab close without logging out?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleForceReclaimLogin}
+                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition cursor-pointer shrink-0"
+                  >
+                    Force Reclaim & Sign In
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

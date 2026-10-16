@@ -1,17 +1,22 @@
 const auditService = require('../services/auditService');
 
-exports.getAuditLogs = (req, res) => {
+exports.getAuditLogs = async (req, res) => {
   try {
-    const { hospitalId, eventType, entityId } = req.query;
+    const { hospitalId, eventType, actionType, entityId } = req.query;
     // Non-super/non-monitors cannot query outside their hospital
     let effectiveHospital = hospitalId;
-    if (req.user && req.user.role !== 'State / District Monitor' && req.user.hospitalId !== 'ALL') {
+    if (
+      req.user &&
+      req.user.role !== 'State / District Monitor' &&
+      req.user.normalizedRole !== 'Auditor' &&
+      req.user.hospitalId !== 'ALL'
+    ) {
       effectiveHospital = req.user.hospitalId;
     }
 
-    const logs = auditService.getAuditLogs({
+    const logs = await auditService.getAuditLogs({
       hospitalId: effectiveHospital,
-      eventType,
+      actionType: actionType || eventType,
       entityId,
     });
 

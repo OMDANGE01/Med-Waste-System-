@@ -19,7 +19,8 @@ import {
   X,
   Database,
   Building2,
-  Users
+  Users,
+  FileSpreadsheet
 } from 'lucide-react';
 import AppLogo from './AppLogo';
 
@@ -59,6 +60,7 @@ export default function CollapsibleSidebar({
   if (isSuperMonitor(currentUser)) {
     navItems = [
       { id: 'supermonitor', label: 'Hospitals Network', icon: Building2 },
+      { id: 'auditorledger', label: 'Auditor Excel Ledger', icon: FileSpreadsheet },
       { id: 'driverroute', label: 'Multi-Hospital Route', icon: Truck, isLive: true },
       { id: 'registry', label: 'Global Registry', icon: ClipboardList, count: stats?.totalBags },
       { id: 'compliance', label: 'State Audit', icon: FileCheck2 },
@@ -66,8 +68,9 @@ export default function CollapsibleSidebar({
     ];
   } else if (isDriver(currentUser)) {
     navItems = [
-      { id: 'driverroute', label: 'Multi-Hospital Route', icon: Truck, isLive: true },
-      { id: 'pickups', label: 'Pickup Manifests', icon: ClipboardList, count: stats?.recentPickupsCount },
+      { id: 'driverroute', label: 'Route & Pickup Hub', icon: Truck, isLive: true },
+      { id: 'registry', label: 'Waste Bags Queue', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'pickups', label: 'Pickup Manifests', icon: FileCheck2, count: stats?.recentPickupsCount },
       { id: 'livemap', label: 'Facility Map', icon: MapPin },
     ];
   } else if (isSupervisor(currentUser)) {

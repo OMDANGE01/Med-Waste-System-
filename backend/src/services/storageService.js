@@ -167,7 +167,11 @@ const getAllWaste = async (filters = {}) => {
     try {
       const query = {};
       if (filters.category && filters.category !== 'All') query.category = filters.category;
-      if (filters.department && filters.department !== 'All') query.department = filters.department;
+      if (filters.department && filters.department !== 'All') {
+        const d = filters.department.trim();
+        const keywords = d.split(/[ &(/)]+/).filter((w) => w.length > 2);
+        query.department = { $regex: keywords.length > 0 ? keywords.join('|') : d, $options: 'i' };
+      }
       if (filters.status && filters.status !== 'All') query.status = filters.status;
       if (filters.hospitalId && filters.hospitalId !== 'ALL') query.hospitalId = filters.hospitalId;
       if (filters.hospitalName && filters.hospitalName !== 'ALL') query.hospitalName = filters.hospitalName;
@@ -191,7 +195,19 @@ const getAllWaste = async (filters = {}) => {
     list = list.filter((r) => r.category === filters.category);
   }
   if (filters.department && filters.department !== 'All') {
-    list = list.filter((r) => r.department === filters.department);
+    const target = filters.department.toLowerCase().trim();
+    list = list.filter((r) => {
+      if (!r.department) return false;
+      const d = r.department.toLowerCase().trim();
+      if (d === target || d.includes(target) || target.includes(d)) return true;
+      if (
+        (target.includes('theater') || target.includes('theatre') || target.includes('ot') || target.includes('surgery')) &&
+        (d.includes('theater') || d.includes('theatre') || d.includes('ot') || d.includes('surgery'))
+      ) {
+        return true;
+      }
+      return false;
+    });
   }
   if (filters.status && filters.status !== 'All') {
     list = list.filter((r) => r.status === filters.status);
@@ -216,9 +232,15 @@ const getAllWaste = async (filters = {}) => {
 };
 
 const getWasteById = async (id) => {
+  if (!id) return null;
   if (isConnected()) {
     try {
-      return await WasteRecordModel.findById(id);
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        const found = await WasteRecordModel.findById(id);
+        if (found) return found;
+      }
+      const foundByTag = await WasteRecordModel.findOne({ tagId: id });
+      if (foundByTag) return foundByTag;
     } catch (e) {
       // fallback
     }
@@ -249,9 +271,15 @@ const createWasteRecord = async (data) => {
 };
 
 const updateWasteRecord = async (id, updateData) => {
+  if (!id) return null;
   if (isConnected()) {
     try {
-      return await WasteRecordModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        const res = await WasteRecordModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        if (res) return res;
+      }
+      const resByTag = await WasteRecordModel.findOneAndUpdate({ tagId: id }, updateData, { new: true, runValidators: true });
+      if (resByTag) return resByTag;
     } catch (e) {
       // fallback
     }

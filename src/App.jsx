@@ -9,6 +9,7 @@ import HardwareHubView from './components/HardwareHubView';
 import HospitalStaffPortalView from './components/HospitalStaffPortalView';
 import SuperMonitorView from './components/SuperMonitorView';
 import MultiHospitalDriverRouteView from './components/MultiHospitalDriverRouteView';
+import AuditorExcelLedgerView from './components/AuditorExcelLedgerView';
 import HospitalStaffDirectoryView from './components/HospitalStaffDirectoryView';
 import CloudSyncModal from './components/CloudSyncModal';
 import LoginPage from './components/LoginPage';
@@ -61,7 +62,14 @@ export const isSuperMonitor = (user) => {
   if (!user) return false;
   const r = (user.role || '').toLowerCase();
   const e = (user.email || '').toLowerCase();
-  return user.hospitalId === 'ALL' || e.includes('supermonitor') || r.includes('inspector') || r.includes('directorate');
+  return (
+    user.hospitalId === 'ALL' ||
+    e.includes('supermonitor') ||
+    r.includes('auditor') ||
+    r.includes('monitor') ||
+    r.includes('inspector') ||
+    r.includes('directorate')
+  );
 };
 
 export const isDriver = (user) => {
@@ -249,11 +257,20 @@ export default function App() {
   const handleLogin = (user) => {
     setCurrentUser(user);
     if (user.hospitalId && user.hospitalId !== 'ALL') {
-      const match = hospitals.find(h => h.hospitalId === user.hospitalId) || {
-        hospitalId: user.hospitalId,
-        name: user.hospitalName || 'Government Hospital of Khamgaon',
-      };
-      setCurrentHospital(match);
+      if (isDriver(user)) {
+        // Driver collects from all hospitals; default to primary hospital network
+        const defaultHosp = hospitals.find(h => h.hospitalId === 'HOSP-01') || hospitals[0] || {
+          hospitalId: 'HOSP-01',
+          name: 'Government Hospital of Khamgaon',
+        };
+        setCurrentHospital(defaultHosp);
+      } else {
+        const match = hospitals.find(h => h.hospitalId === user.hospitalId) || {
+          hospitalId: user.hospitalId,
+          name: user.hospitalName || 'Government Hospital of Khamgaon',
+        };
+        setCurrentHospital(match);
+      }
     }
     try {
       localStorage.setItem('medwaste_user', JSON.stringify(user));
@@ -265,11 +282,43 @@ export default function App() {
     addToast('Welcome to Hospital Portal', `Signed in as ${user.name} (${user.role} • ${user.hospitalName || 'Khamgaon'})`, 'success');
   };
 
-  const handleLogout = () => {
-    authService.logout();
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {}
     setCurrentUser(null);
-    addToast('Signed Out', 'You have been safely signed out. Please sign in with your credentials.', 'info');
+    addToast('Signed Out', 'You have been safely signed out. Active session flag cleared.', 'info');
   };
+
+  // Strict Single-Session Heartbeat & Abandonment Cleanup
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await authService.heartbeat();
+        if (res && res.code === 'SESSION_SUPERSEDED') {
+          clearInterval(interval);
+          handleLogout();
+          addToast('Session Ended', 'This account has been logged in on another device. You have been signed out.', 'warning');
+        }
+      } catch {}
+    }, 25000); // 25s heartbeat
+
+    const handlePageHide = () => {
+      const token = localStorage.getItem('medwaste_auth_token');
+      if (token && currentUser?.email) {
+        const blob = new Blob([JSON.stringify({ email: currentUser.email })], { type: 'application/json' });
+        navigator.sendBeacon('/api/auth/logout', blob);
+      }
+    };
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [currentUser]);
 
   // Fetch Hospitals
   const fetchHospitals = useCallback(async () => {
@@ -323,10 +372,19 @@ export default function App() {
     }
   };
 
-  // Fetch Stats
+  // Fetch Stats (Scoped to user hospital, universal for Driver/Auditor)
   const fetchStats = useCallback(async () => {
     try {
-      const hospParam = currentHospital && currentHospital.hospitalId !== 'ALL' ? `?hospitalId=${currentHospital.hospitalId}` : '';
+      const isUniversal = isSuperMonitor(currentUser) || isDriver(currentUser);
+      const userHospId = currentUser?.hospitalId;
+      let effectiveHosp = null;
+      if (!isUniversal && userHospId && userHospId !== 'ALL' && userHospId !== 'CBWTF-01') {
+        effectiveHosp = userHospId;
+      } else if (!isUniversal && currentHospital && currentHospital.hospitalId !== 'ALL' && currentHospital.hospitalId !== 'CBWTF-01') {
+        effectiveHosp = currentHospital.hospitalId;
+      }
+
+      const hospParam = effectiveHosp ? `?hospitalId=${effectiveHosp}` : '';
       let res = await fetchWithRetry(`/api/stats${hospParam}`, {}, 3, 300);
       if (!res.ok) {
         res = await fetchWithRetry(`/api/waste/stats${hospParam}`, {}, 2, 300);
@@ -343,9 +401,9 @@ export default function App() {
     } catch (err) {
       console.warn('Stats fetch notice, using fallback data:', err.message);
     }
-  }, [currentHospital]);
+  }, [currentHospital, currentUser]);
 
-  // Fetch Waste Records
+  // Fetch Waste Records (Strict Hospital Isolation, Universal Driver Access)
   const fetchWasteRecords = useCallback(async () => {
     setIsLoadingWaste(true);
     try {
@@ -354,8 +412,18 @@ export default function App() {
       if (filters.department && filters.department !== 'All') params.append('department', filters.department);
       if (filters.status && filters.status !== 'All') params.append('status', filters.status);
       if (filters.search) params.append('search', filters.search);
-      if (currentHospital && currentHospital.hospitalId !== 'ALL') {
-        params.append('hospitalId', currentHospital.hospitalId);
+
+      const isUniversal = isSuperMonitor(currentUser) || isDriver(currentUser);
+      const userHospId = currentUser?.hospitalId;
+      let effectiveHosp = null;
+      if (!isUniversal && userHospId && userHospId !== 'ALL' && userHospId !== 'CBWTF-01') {
+        effectiveHosp = userHospId;
+      } else if (!isUniversal && currentHospital && currentHospital.hospitalId !== 'ALL' && currentHospital.hospitalId !== 'CBWTF-01') {
+        effectiveHosp = currentHospital.hospitalId;
+      }
+
+      if (effectiveHosp) {
+        params.append('hospitalId', effectiveHosp);
       }
 
       const res = await fetchWithRetry(`/api/waste?${params.toString()}`, {}, 3, 300);
@@ -364,7 +432,11 @@ export default function App() {
         if (contentType.includes('application/json')) {
           const data = await res.json();
           if (data && data.data) {
-            setWasteRecords(data.data);
+            // Strict hospital isolation: Drivers and Auditors see network bags; hospital staff only see their own hospital bags
+            const filtered = (!isUniversal && userHospId && userHospId !== 'ALL' && userHospId !== 'CBWTF-01')
+              ? data.data.filter((r) => r.hospitalId === userHospId)
+              : data.data;
+            setWasteRecords(filtered);
           }
         }
       }
@@ -373,7 +445,7 @@ export default function App() {
     } finally {
       setIsLoadingWaste(false);
     }
-  }, [filters, currentHospital]);
+  }, [filters, currentHospital, currentUser]);
 
   // Fetch Pickups
   const fetchPickups = useCallback(async () => {
@@ -430,13 +502,25 @@ export default function App() {
     // Initialize Socket.io connection
     socketService.initSocket();
 
-    // 1. Live Waste Creation event
+    // 1. Live Waste Creation event (Strict Hospital Isolation)
     const unsubCreated = socketService.subscribeToWasteCreated((newRecord) => {
+      const isUniversal = isSuperMonitor(currentUser) || isDriver(currentUser);
+      const userHospId = currentUser?.hospitalId;
+      const targetHospId = currentHospital?.hospitalId;
+
+      // Strict hospital isolation: never show another hospital's logged bags!
+      if (!isUniversal && userHospId && userHospId !== 'ALL' && newRecord.hospitalId !== userHospId) {
+        return;
+      }
+      if (!isUniversal && targetHospId && targetHospId !== 'ALL' && newRecord.hospitalId !== targetHospId) {
+        return;
+      }
+
       setWasteRecords((prev) => [newRecord, ...prev.filter((r) => r.tagId !== newRecord.tagId)]);
       fetchStats();
       addToast(
-        'Live Bio-Waste Logged',
-        `Bag #${newRecord.tagId} (${newRecord.weightKg} kg - ${newRecord.category}) registered by ${newRecord.handlerName}`,
+        'Bio-Waste Bag Logged',
+        `Bag #${newRecord.tagId} (${newRecord.weightKg} kg - ${newRecord.category}) registered at ${newRecord.hospitalName}`,
         'success'
       );
     });
@@ -444,6 +528,13 @@ export default function App() {
     // 2. Live Status Transition event (Driver marked Collected / Delivered)
     const unsubStatus = socketService.subscribeToWasteStatusUpdated((payload) => {
       if (!payload || !payload.record) return;
+      const isUniversal = isSuperMonitor(currentUser) || isDriver(currentUser);
+      const userHospId = currentUser?.hospitalId;
+
+      if (!isUniversal && userHospId && userHospId !== 'ALL' && payload.record.hospitalId !== userHospId) {
+        return;
+      }
+
       setWasteRecords((prev) =>
         prev.map((r) =>
           r._id === payload.record._id || r.tagId === payload.record.tagId
@@ -457,6 +548,13 @@ export default function App() {
     // 3. Dedicated Collected event for Hospital Head and Auditor screens
     const unsubCollected = socketService.subscribeToWasteCollected((payload) => {
       if (!payload || !payload.record) return;
+      const isUniversal = isSuperMonitor(currentUser) || isDriver(currentUser);
+      const userHospId = currentUser?.hospitalId;
+
+      if (!isUniversal && userHospId && userHospId !== 'ALL' && payload.record.hospitalId !== userHospId) {
+        return;
+      }
+
       addToast(
         'Real-Time Bag Collection',
         `Driver ${payload.actor?.name || 'Driver'} collected Bag #${payload.record.tagId} from ${payload.record.hospitalName}`,
@@ -469,14 +567,18 @@ export default function App() {
       unsubStatus();
       unsubCollected();
     };
-  }, [fetchHospitals, fetchWorkers, fetchStats, fetchWasteRecords, fetchPickups, fetchIncidents]);
+  }, [fetchHospitals, fetchWorkers, fetchStats, fetchWasteRecords, fetchPickups, fetchIncidents, currentUser, currentHospital]);
 
-  // Handle Save / Create Waste Record
+  // Handle Save / Create Waste Record (Locked to User's Registered Facility)
   const handleSaveWasteRecord = async (recordData) => {
+    const userHospId = currentUser?.hospitalId && currentUser.hospitalId !== 'ALL' ? currentUser.hospitalId : null;
+    const userHospName = currentUser?.hospitalName && currentUser.hospitalId !== 'ALL' ? currentUser.hospitalName : null;
+
     const enrichedData = {
       ...recordData,
-      hospitalId: currentHospital?.hospitalId || 'HOSP-01',
-      hospitalName: currentHospital?.name || 'Government Hospital of Khamgaon',
+      hospitalId: userHospId || recordData.hospitalId || currentHospital?.hospitalId || 'HOSP-01',
+      hospitalName: userHospName || recordData.hospitalName || currentHospital?.name || 'Government Hospital of Khamgaon',
+      handlerName: currentUser?.name || recordData.handlerName || 'Sister Sunita Tayade',
     };
 
     try {
@@ -546,8 +648,8 @@ export default function App() {
   };
 
   // Handle Status Quick Change
-  const handleUpdateWasteStatus = async (id, newStatus) => {
-    cloudSync.enqueueTransaction('waste_records', 'UPDATE', { tagId: id, status: newStatus });
+  const handleUpdateWasteStatus = async (id, newStatus, extraData = {}) => {
+    cloudSync.enqueueTransaction('waste_records', 'UPDATE', { tagId: id, status: newStatus, ...extraData });
 
     try {
       const token = typeof localStorage !== 'undefined' ? localStorage.getItem('medwaste_auth_token') : null;
@@ -557,7 +659,7 @@ export default function App() {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, ...extraData }),
       });
       const json = await res.json();
       if (json.success) {
@@ -570,6 +672,31 @@ export default function App() {
     } catch (e) {
       addToast('Status Change', `Transition to "${newStatus}" processed.`, 'info');
     }
+  };
+
+  // Helper: Quick Generate Sample Waste Bag (Allows drivers and staff to test collection & disposal anytime)
+  const handleQuickGenerateSampleBag = async () => {
+    const hosp = currentHospital || hospitals[0] || {
+      hospitalId: 'HOSP-01',
+      name: 'Government Hospital of Khamgaon',
+    };
+    const categories = ['Yellow', 'Red', 'Blue', 'Black'];
+    const randomCat = categories[Math.floor(Math.random() * categories.length)];
+    const weight = (Math.random() * 4 + 1.8).toFixed(2);
+    const tagId = `KHM-${hosp.hospitalId ? hosp.hospitalId.split('-')[1] : 'GOV'}-${Date.now().toString().slice(-4)}`;
+
+    await handleSaveWasteRecord({
+      tagId,
+      hospitalId: hosp.hospitalId || 'HOSP-01',
+      hospitalName: hosp.name,
+      category: randomCat,
+      department: 'Emergency & Trauma',
+      weightKg: weight,
+      weightSource: 'Web Serial Digital Scale (9600 baud)',
+      handlerName: currentUser?.name || 'Sister Sunita Tayade',
+      status: 'Logged',
+      notes: `Simulated bio-medical waste bag generated at ${hosp.name}`,
+    });
   };
 
   // Handle Staff Alerting Pickup Driver
@@ -715,12 +842,14 @@ export default function App() {
     );
   }
 
-  const pendingWasteForPickup = wasteRecords.filter((r) => r.status === 'Awaiting Pickup');
+  const pendingWasteForPickup = wasteRecords.filter(
+    (r) => r.status === 'Logged' || r.status === 'Awaiting Pickup' || r.status === 'In Transit' || r.status === 'Collected'
+  );
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} flex flex-col font-sans selection:bg-emerald-500 selection:text-white transition-colors`}>
       {/* Toast Notification Stream */}
-      <Toast toasts={toasts} removeToast={removeToast} />
+      <Toast toasts={toasts} removeToast={removeToast} onDismiss={removeToast} />
 
       {/* Offline Status & IndexedDB Auto-Sync Indicator */}
       <OfflineIndicator />
@@ -797,6 +926,8 @@ export default function App() {
               currentUser={currentUser}
               onUpdateRecordStatus={handleUpdateWasteStatus}
               onAddToast={addToast}
+              onOpenQRScanner={() => setIsQRModalOpen(true)}
+              onQuickLogSample={handleQuickGenerateSampleBag}
             />
           )}
 
@@ -862,6 +993,17 @@ export default function App() {
               onViewBarcode={(rec) => setBarcodeModalRecord(rec)}
               onNavigateToMap={handleNavigateToMap}
               onAddToast={addToast}
+              currentUser={currentUser}
+            />
+          )}
+
+          {/* VIEW: Auditor Master Excel Spreadsheet Ledger */}
+          {activeTab === 'auditorledger' && (
+            <AuditorExcelLedgerView
+              wasteRecords={wasteRecords}
+              currentUser={currentUser}
+              hospitals={hospitals}
+              onRefresh={fetchWasteRecords}
             />
           )}
 
@@ -926,6 +1068,7 @@ export default function App() {
         onClose={() => setIsScheduleModalOpen(false)}
         onSchedule={handleSchedulePickup}
         pendingWaste={pendingWasteForPickup}
+        onQuickLogSample={handleQuickGenerateSampleBag}
       />
 
       <IncidentModal

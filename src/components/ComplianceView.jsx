@@ -24,10 +24,12 @@ import {
   Sparkles,
   Layers,
   X,
-  FileCheck2
+  FileCheck2,
+  FileSpreadsheet
 } from 'lucide-react';
 import TableSkeleton from './TableSkeleton';
 import socketService from '../services/socketService';
+import AuditorExcelLedgerView from './AuditorExcelLedgerView';
 
 export default function ComplianceView({
   incidents = [],
@@ -264,6 +266,18 @@ export default function ComplianceView({
       {/* Navigation Sub-Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3 print:hidden">
         <button
+          onClick={() => setActiveTab('excel_ledger')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+            activeTab === 'excel_ledger'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Auditor Master Excel Ledger</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('audit_checklist')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
             activeTab === 'audit_checklist'
@@ -323,6 +337,15 @@ export default function ComplianceView({
           <span>Occupational Incidents ({incidents.length})</span>
         </button>
       </div>
+
+      {/* ─── TAB: AUDITOR MASTER EXCEL SPREADSHEET LEDGER ─── */}
+      {activeTab === 'excel_ledger' && (
+        <AuditorExcelLedgerView
+          wasteRecords={wasteRecords}
+          currentUser={currentUser}
+          currentHospital={currentHospital}
+        />
+      )}
 
       {/* ─── TAB: ROLE-PERMISSION MATRIX ─── */}
       {activeTab === 'role_matrix' && (

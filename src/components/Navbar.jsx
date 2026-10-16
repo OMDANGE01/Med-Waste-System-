@@ -25,7 +25,8 @@ import {
   Clock,
   Sparkles,
   Smartphone,
-  Download
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -50,7 +51,14 @@ export default function Navbar({
     if (!user) return false;
     const r = (user.role || '').toLowerCase();
     const e = (user.email || '').toLowerCase();
-    return user.hospitalId === 'ALL' || e.includes('supermonitor') || r.includes('monitor') || r.includes('directorate');
+    return (
+      user.hospitalId === 'ALL' ||
+      e.includes('supermonitor') ||
+      r.includes('auditor') ||
+      r.includes('monitor') ||
+      r.includes('directorate') ||
+      r.includes('inspector')
+    );
   };
 
   const isDriver = (user) => {
@@ -77,14 +85,16 @@ export default function Navbar({
   if (isSuperMonitor(currentUser)) {
     navItems = [
       { id: 'supermonitor', label: 'Hospitals Network', icon: Building2 },
+      { id: 'auditorledger', label: 'Auditor Excel Ledger', icon: FileSpreadsheet },
       { id: 'driverroute', label: 'Transit Fleet', icon: Truck, isLive: true },
       { id: 'registry', label: 'CPCB Master Registry', icon: ClipboardList, count: stats?.totalBags },
       { id: 'compliance', label: 'State Audit Trail', icon: FileCheck2 },
     ];
   } else if (isDriver(currentUser)) {
     navItems = [
-      { id: 'driverroute', label: 'Pickup Route', icon: Truck, isLive: true },
-      { id: 'pickups', label: 'Manifest Sign-off', icon: ClipboardList, count: stats?.recentPickupsCount },
+      { id: 'driverroute', label: 'Route & Pickup Hub', icon: Truck, isLive: true },
+      { id: 'registry', label: 'Waste Bags Queue', icon: ClipboardList, count: stats?.totalBags },
+      { id: 'pickups', label: 'Manifest Sign-off', icon: FileCheck2, count: stats?.recentPickupsCount },
       { id: 'livemap', label: 'Transit GPS', icon: MapPin },
     ];
   } else if (isSupervisor(currentUser)) {
@@ -204,8 +214,18 @@ export default function Navbar({
               </button>
             )}
 
-            {/* Log Waste Bag Button (Visible to clinical staff, waste collection staff, superintendents) */}
-            {!isDriver(currentUser) && (
+            {/* Action Button: Drivers get Scan & Pick Bags button, Clinical/Hospital staff get Log Bag */}
+            {isDriver(currentUser) ? (
+              <button
+                type="button"
+                onClick={onOpenQRModal}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-900/30 transition cursor-pointer"
+                title="Scan QR or Barcode to Pick or Deliver Biohazard Bags"
+              >
+                <QrCode className="w-4 h-4" />
+                <span className="hidden sm:inline">Scan & Pick</span>
+              </button>
+            ) : (
               <button
                 onClick={onOpenLogModal}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-700/20 transition cursor-pointer"

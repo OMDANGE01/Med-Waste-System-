@@ -26,14 +26,35 @@ const HOSPITAL_PRESETS = [
   { name: 'Dr. Hedgewar Rugnalaya Khamgaon', lat: 20.6970, lng: 76.5720 },
 ];
 
-export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }) {
+export default function WasteLogModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  editingRecord,
+  currentUser,
+  currentHospital 
+}) {
+  const getActiveHospital = () => {
+    if (currentUser?.hospitalName && currentUser.hospitalId !== 'ALL') {
+      return currentUser.hospitalName;
+    }
+    if (currentHospital?.name && currentHospital.hospitalId !== 'ALL') {
+      return currentHospital.name;
+    }
+    return 'Government Hospital of Khamgaon';
+  };
+
+  const getActiveHandler = () => {
+    return currentUser?.name || 'Sister Sunita Tayade';
+  };
+
   const [formData, setFormData] = useState({
     tagId: '',
     category: 'Yellow',
     department: 'Operating Theater (OT-1 & OT-2)',
     weightKg: '',
-    handlerName: '',
-    hospitalName: 'Government Hospital of Khamgaon',
+    handlerName: getActiveHandler(),
+    hospitalName: getActiveHospital(),
     location: '',
     lat: 20.6920,
     lng: 76.5695,
@@ -58,8 +79,8 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
         category: editingRecord.category || 'Yellow',
         department: editingRecord.department || 'Operating Theater (OT-1 & OT-2)',
         weightKg: editingRecord.weightKg?.toString() || '',
-        handlerName: editingRecord.handlerName || '',
-        hospitalName: editingRecord.hospitalName || 'Government Hospital of Khamgaon',
+        handlerName: editingRecord.handlerName || getActiveHandler(),
+        hospitalName: editingRecord.hospitalName || getActiveHospital(),
         location: editingRecord.location || '',
         lat: editingRecord.lat || 20.6920,
         lng: editingRecord.lng || 76.5695,
@@ -74,8 +95,8 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
         category: 'Yellow',
         department: 'Operating Theater (OT-1 & OT-2)',
         weightKg: '',
-        handlerName: 'Sister Sunita Tayade',
-        hospitalName: 'Government Hospital of Khamgaon',
+        handlerName: getActiveHandler(),
+        hospitalName: getActiveHospital(),
         location: 'OT-1 Scrub & Prep',
         lat: 20.6920,
         lng: 76.5695,
@@ -84,7 +105,7 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
       }));
     }
     setErrors({});
-  }, [editingRecord, isOpen]);
+  }, [editingRecord, isOpen, currentUser, currentHospital]);
 
   const generateTagId = () => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -363,19 +384,31 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
               </button>
             </div>
 
-            {/* Tag ID & Barcode generation */}
+            {/* Tag ID & Camera Barcode Scanner Quick-Fill */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Bag Barcode / Tag ID <span className="text-rose-500">*</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={generateTagId}
-                  className="text-xs text-rose-400 hover:text-rose-300 font-semibold"
-                >
-                  Generate New ID
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsScannerOpen(true)}
+                    className="text-xs text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 cursor-pointer transition"
+                    title="Scan physical camera barcode or GS1 2D QR tag"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Camera Scan</span>
+                  </button>
+                  <span className="text-slate-600">•</span>
+                  <button
+                    type="button"
+                    onClick={generateTagId}
+                    className="text-xs text-slate-400 hover:text-slate-200 font-semibold cursor-pointer"
+                  >
+                    Generate New ID
+                  </button>
+                </div>
               </div>
               <div className="relative">
                 <QrCode className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -384,8 +417,16 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
                   value={formData.tagId}
                   onChange={(e) => setFormData({ ...formData, tagId: e.target.value })}
                   placeholder="e.g. MW-2026-1008"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-rose-500"
+                  className="w-full pl-10 pr-28 py-2.5 rounded-xl bg-slate-800 border border-slate-700 font-mono text-sm text-white focus:outline-none focus:border-rose-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-md"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Scan Tag</span>
+                </button>
               </div>
               {errors.tagId && <p className="text-xs text-rose-500 mt-1">{errors.tagId}</p>}
             </div>

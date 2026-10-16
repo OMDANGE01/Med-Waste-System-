@@ -4,6 +4,8 @@ const authCtrl = require('../controllers/authController');
 const { requireAuth } = require('../middleware/authMiddleware');
 
 router.post('/login', authCtrl.login);
+router.post('/logout', authCtrl.logout);
+router.post('/heartbeat', requireAuth, authCtrl.heartbeat);
 router.post('/bootstrap-superintendent', authCtrl.bootstrapSuperintendent);
 router.get('/me', requireAuth, authCtrl.getMe);
 router.post('/change-password', requireAuth, authCtrl.changePassword);

@@ -1,8 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middleware/authMiddleware');
+
+const SESSION_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes inactivity timeout
 const auditService = require('../services/auditService');
 const { initialWorkers, initialHospitals } = require('../seeds/seedData');
 
@@ -112,16 +115,22 @@ const sanitizeUser = (user) => {
 /**
  * Generates signed JWT token with 8-hour expiry
  */
-const generateToken = (user) => {
+/**
+ * Generates signed JWT token with 8-hour expiry and active session ID
+ */
+const generateToken = (user, sessionId) => {
   return jwt.sign(
     {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      department: user.department,
+      departmentId: user.departmentId || user.department,
       hospitalId: user.hospitalId,
       hospitalName: user.hospitalName,
       badgeNumber: user.badgeNumber,
+      sessionId: sessionId || user.active_session_id,
     },
     JWT_SECRET,
     { expiresIn: '8h' }
@@ -130,11 +139,13 @@ const generateToken = (user) => {
 
 /**
  * POST /api/auth/login
- * Strict server-side credential verification with bcrypt.
+ * Strict single-session enforcement per email account:
+ * Tracks active session status in the database (is_logged_in, active_session_id, last_active_at).
+ * Rejects concurrent logins with exact statutory regulatory message.
  */
 exports.login = async (req, res) => {
   try {
-    const { identifier, password, hospitalId } = req.body;
+    const { identifier, password, hospitalId, forceReclaim } = req.body;
 
     if (!identifier || !password) {
       return res.status(400).json({
@@ -158,16 +169,6 @@ exports.login = async (req, res) => {
         success: false,
         message: 'Invalid credentials. User identity not found.',
       });
-    }
-
-    // Verify hospital scope (State Monitors have access across all facilities)
-    if (user.role !== 'State / District Monitor' && user.hospitalId !== 'ALL') {
-      if (hospitalId && user.hospitalId !== hospitalId) {
-        return res.status(403).json({
-          success: false,
-          message: `This staff account belongs to ${user.hospitalName}. Please select your registered hospital to log in.`,
-        });
-      }
     }
 
     // Server-side credential verification (supports bcrypt hashes, plain-text migration, and bootstrap defaults)
@@ -210,21 +211,68 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Generate authenticated session token
-    const token = generateToken(user);
+    // --- CONCURRENCY & SINGLE-SESSION ENFORCEMENT ---
+    const now = Date.now();
+    const lastActiveTime = user.last_active_at ? new Date(user.last_active_at).getTime() : 0;
+    const isSessionStillActive =
+      user.is_logged_in === true &&
+      user.active_session_id &&
+      now - lastActiveTime < SESSION_INACTIVITY_TIMEOUT_MS;
+
+    if (isSessionStillActive && !forceReclaim) {
+      auditService.logEvent({
+        actionType: 'CONCURRENT_LOGIN_BLOCKED',
+        actorId: user.id,
+        actorRole: user.role,
+        actorName: user.name,
+        entityId: user.id,
+        hospitalId: user.hospitalId,
+        details: {
+          reason: 'Concurrent session rejected',
+          active_session_id: user.active_session_id,
+          last_active_at: user.last_active_at,
+        },
+      });
+
+      return res.status(409).json({
+        success: false,
+        code: 'CONCURRENT_SESSION_ACTIVE',
+        message: 'This account is already logged in on another device. Please log out from the other device first.',
+        active_session_id: user.active_session_id,
+        last_active_at: user.last_active_at,
+        minutesRemaining: Math.ceil((SESSION_INACTIVITY_TIMEOUT_MS - (now - lastActiveTime)) / 60000),
+      });
+    }
+
+    // Allocate pristine active session ID
+    const newSessionId = `sess_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
+    user.is_logged_in = true;
+    user.active_session_id = newSessionId;
+    user.last_active_at = new Date().toISOString();
+    user.session_created_at = new Date().toISOString();
+    saveUsers(users);
+
+    // Generate authenticated session token with embedded session ID
+    const token = generateToken(user, newSessionId);
 
     auditService.logEvent({
       eventType: 'AUTH_LOGIN_SUCCESS',
       actor: user,
       entityId: user.id,
       hospitalId: user.hospitalId,
-      details: { role: user.role, badgeNumber: user.badgeNumber },
+      details: {
+        role: user.role,
+        badgeNumber: user.badgeNumber,
+        active_session_id: newSessionId,
+        reclaimed: !!forceReclaim,
+      },
     });
 
     return res.json({
       success: true,
       message: 'Authentication successful.',
       token,
+      sessionId: newSessionId,
       user: sanitizeUser(user),
     });
   } catch (err) {
@@ -233,6 +281,98 @@ exports.login = async (req, res) => {
       success: false,
       message: 'Server error during authentication processing.',
     });
+  }
+};
+
+/**
+ * POST /api/auth/logout
+ * Explicit logout immediately releases the user's active session flag.
+ */
+exports.logout = async (req, res) => {
+  try {
+    const users = loadUsers();
+    const tokenUser = req.user;
+    const { email, identifier, sessionId } = req.body || {};
+
+    let targetUser = null;
+    if (tokenUser && tokenUser.email) {
+      targetUser = users.find((u) => u.email.toLowerCase() === tokenUser.email.toLowerCase());
+    } else if (email || identifier) {
+      const clean = (email || identifier).trim().toLowerCase();
+      targetUser = users.find(
+        (u) =>
+          (u.email || '').toLowerCase() === clean || (u.badgeNumber || '').toLowerCase() === clean
+      );
+    } else if (sessionId) {
+      targetUser = users.find((u) => u.active_session_id === sessionId);
+    }
+
+    if (targetUser) {
+      targetUser.is_logged_in = false;
+      targetUser.active_session_id = null;
+      targetUser.last_active_at = null;
+      saveUsers(users);
+
+      auditService.logEvent({
+        actionType: 'AUTH_LOGOUT',
+        actorId: targetUser.id,
+        actorRole: targetUser.role,
+        actorName: targetUser.name,
+        entityId: targetUser.id,
+        hospitalId: targetUser.hospitalId,
+        details: { session_cleared: true },
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Successfully logged out. Active session flag cleared.',
+    });
+  } catch (err) {
+    console.error('[AUTH] Logout error:', err);
+    return res.status(500).json({ success: false, message: 'Logout failed.' });
+  }
+};
+
+/**
+ * POST /api/auth/heartbeat
+ * Keeps active session alive, updates last_active_at timestamp,
+ * and detects if session was superseded by another login.
+ */
+exports.heartbeat = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.email) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: No active session.' });
+    }
+
+    const users = loadUsers();
+    const matched = users.find((u) => u.email.toLowerCase() === user.email.toLowerCase());
+    if (!matched) {
+      return res.status(404).json({ success: false, message: 'User record not found.' });
+    }
+
+    // Verify session ID to ensure user was not kicked out by another device
+    if (user.sessionId && matched.active_session_id && user.sessionId !== matched.active_session_id) {
+      return res.status(401).json({
+        success: false,
+        code: 'SESSION_SUPERSEDED',
+        message: 'This account has been logged in on another device. Your session has ended.',
+      });
+    }
+
+    matched.is_logged_in = true;
+    matched.last_active_at = new Date().toISOString();
+    saveUsers(users);
+
+    return res.json({
+      success: true,
+      is_logged_in: matched.is_logged_in,
+      active_session_id: matched.active_session_id,
+      last_active_at: matched.last_active_at,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Heartbeat error.' });
   }
 };
 

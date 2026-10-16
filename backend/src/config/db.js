@@ -46,10 +46,10 @@ const maskUri = (uri) => {
 
 const connectDB = async () => {
   const rawUri = process.env.MONGODB_URI || process.env.MONGO_URI;
-  if (!rawUri) {
+  if (!rawUri || (!rawUri.trim().startsWith('mongodb://') && !rawUri.trim().startsWith('mongodb+srv://'))) {
     mongoConnected = false;
-    lastError = 'No MONGODB_URI configured in environment';
-    console.log('[DB] No MONGODB_URI configured. Running with resilient local persistent storage engine.');
+    lastError = rawUri ? 'MONGODB_URI is not a mongodb:// or mongodb+srv:// connection string' : 'No MONGODB_URI configured in environment';
+    console.log('[DB] Running with resilient local persistent storage engine.');
     return false;
   }
 

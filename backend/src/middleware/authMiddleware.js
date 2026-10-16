@@ -1,6 +1,12 @@
+const fs = require('fs');
+const path = require('path');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cpcb-khamgaon-biohazard-sec-2026';
+const DATA_DIR = process.env.DATA_DIR || (fs.existsSync(path.join(process.cwd(), 'backend/data')) 
+  ? path.join(process.cwd(), 'backend/data') 
+  : path.join(__dirname, '../../data'));
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 /**
  * Normalizes system roles to standard CPCB RBAC categories:
@@ -81,6 +87,24 @@ const requireAuth = (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Single-session enforcement check
+    if (decoded.email && decoded.sessionId && fs.existsSync(USERS_FILE)) {
+      try {
+        const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+        const user = users.find((u) => u.email.toLowerCase() === decoded.email.toLowerCase());
+        if (user && user.active_session_id && user.active_session_id !== decoded.sessionId) {
+          return res.status(401).json({
+            success: false,
+            code: 'SESSION_SUPERSEDED',
+            message: 'This account has been logged in on another device. Your session has ended.',
+          });
+        }
+      } catch {
+        // fail-safe on transient file lock
+      }
+    }
+
     req.user = {
       ...decoded,
       normalizedRole: normalizeRole(decoded.role),

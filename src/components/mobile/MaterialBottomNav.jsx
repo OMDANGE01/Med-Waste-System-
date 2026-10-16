@@ -8,7 +8,8 @@ import {
   Building2, 
   Users,
   MapPin,
-  ShieldCheck
+  ShieldCheck,
+  QrCode
 } from 'lucide-react';
 
 /**
@@ -20,6 +21,7 @@ export default function MaterialBottomNav({
   setActiveTab,
   currentUser,
   onOpenLogModal,
+  onOpenQRModal,
   stats,
 }) {
   const triggerHaptic = () => {
@@ -66,7 +68,8 @@ export default function MaterialBottomNav({
   } else if (isDriver(currentUser)) {
     tabs = [
       { id: 'driverroute', label: 'Route', icon: Truck },
-      { id: 'pickups', label: 'Manifests', icon: ClipboardList, badge: stats?.recentPickupsCount },
+      { id: 'registry', label: 'Pick Bags', icon: ClipboardList, badge: stats?.totalBags },
+      { id: 'pickups', label: 'Manifests', icon: FileCheck2 },
       { id: 'livemap', label: 'Live GPS', icon: MapPin },
     ];
   } else if (isSupervisor(currentUser)) {
@@ -129,8 +132,23 @@ export default function MaterialBottomNav({
           );
         })}
 
-        {/* Center Quick Action: Log Waste (Only for clinical / waste staff) */}
-        {!isDriver(currentUser) && (
+        {/* Center Quick Action: Drivers get Scan & Pick, Clinical staff get Log Bag */}
+        {isDriver(currentUser) ? (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic();
+              if (onOpenQRModal) onOpenQRModal();
+            }}
+            className="flex flex-col items-center justify-center px-2 py-1 group cursor-pointer min-h-[48px]"
+            title="Scan QR / Barcode to Pick or Deliver Bag"
+          >
+            <div className="w-11 h-11 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-900/30 active:scale-95 transition-all">
+              <QrCode className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] mt-0.5 font-bold text-purple-700 dark:text-purple-400">Scan & Pick</span>
+          </button>
+        ) : (
           <button
             type="button"
             onClick={() => {

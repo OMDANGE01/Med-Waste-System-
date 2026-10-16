@@ -52,11 +52,12 @@ exports.getWasteRecords = async (req, res) => {
       }
     }
 
-    // Scope to user's assigned hospital unless Auditor or Global HospitalHead
+    // Scope to user's assigned hospital unless Auditor, Driver, or Global HospitalHead
     let effectiveHospital = hospitalId;
     if (
       req.user &&
       req.user.normalizedRole !== 'Auditor' &&
+      req.user.normalizedRole !== 'Driver' &&
       req.user.hospitalId &&
       req.user.hospitalId !== 'ALL'
     ) {
@@ -268,7 +269,7 @@ exports.createWasteRecord = async (req, res) => {
 // PATCH /api/waste/:id/status
 exports.updateWasteStatus = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id || req.params.tagId;
     const { status, vehicleNumber, driverName, disposalFacility, incineratorChamberTemp } = req.body;
 
     // RBAC: Only Driver (and HospitalHead) can transition status
@@ -389,6 +390,7 @@ exports.getWasteStats = async (req, res) => {
     if (
       req.user &&
       req.user.normalizedRole !== 'Auditor' &&
+      req.user.normalizedRole !== 'Driver' &&
       req.user.hospitalId &&
       req.user.hospitalId !== 'ALL'
     ) {

@@ -288,7 +288,11 @@
     "phone": "+91 98225 77119",
     "badgeNumber": "CBWTF-DRV-28",
     "isBootstrapPassword": true,
-    "createdAt": "2026-09-27T16:16:27.051Z"
+    "createdAt": "2026-09-27T16:16:27.051Z",
+    "is_logged_in": true,
+    "active_session_id": "sess_1792121846800_6dcad9d9257b",
+    "last_active_at": "2026-10-16T03:37:26.800Z",
+    "session_created_at": "2026-10-16T03:37:26.800Z"
   },
   {
     "id": "WRK-CBWTF-002",

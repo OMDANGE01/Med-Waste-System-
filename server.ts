@@ -145,6 +145,10 @@ async function startServer() {
     res.sendFile(path.join(process.cwd(), "public/manifest.json"));
   });
 
+  // Serve generated QR code images directly with proper MIME type
+  app.use("/qrcodes", express.static(path.join(process.cwd(), "public/qrcodes")));
+  app.use(express.static(path.join(process.cwd(), "public")));
+
   // Vite middleware for development vs static build for production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

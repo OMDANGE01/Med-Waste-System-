@@ -46,5 +46,877 @@
     },
     "previousHash": "1583f812922c5554aee86e1b3fafe19e349b21673678a8e1b2b7df135ec9d71b",
     "hash": "b4c1ebc171d9e57ee212fe1844b7fba3ab4fc9785e07ff1fd7eb61e036b3cb8b"
+  },
+  {
+    "id": "AUDIT-1792117321571-272",
+    "timestamp": "2026-10-16T02:22:01.571Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "b4c1ebc171d9e57ee212fe1844b7fba3ab4fc9785e07ff1fd7eb61e036b3cb8b",
+    "hash": "9d6e41cbd81386f40e0730d5f7caf2ca2396049ca7ecfda4ce717240f78c7d22"
+  },
+  {
+    "id": "AUDIT-1792117327039-80",
+    "timestamp": "2026-10-16T02:22:07.039Z",
+    "actionType": "WASTE_LOGGED",
+    "eventType": "WASTE_LOGGED",
+    "actorId": "USR-NURSE-01",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8847",
+    "previousState": null,
+    "newState": {
+      "tagId": "CPCB-MH28-HOSP-01-20261016-8847",
+      "category": "Yellow",
+      "weightKg": 3.75,
+      "status": "Logged",
+      "qrCodeUrl": "/qrcodes/CPCB-MH28-HOSP-01-20261016-8847.png"
+    },
+    "details": {
+      "category": "Yellow",
+      "weightKg": 3.75,
+      "department": "Pathology & Histology",
+      "qrCodeUrl": "/qrcodes/CPCB-MH28-HOSP-01-20261016-8847.png"
+    },
+    "previousHash": "9d6e41cbd81386f40e0730d5f7caf2ca2396049ca7ecfda4ce717240f78c7d22",
+    "hash": "6ed6066c7d06e843606e4f24dad8df8df7570d90a770b1637476d24d8e03819e"
+  },
+  {
+    "id": "AUDIT-1792117400878-157",
+    "timestamp": "2026-10-16T02:23:20.878Z",
+    "actionType": "WASTE_LOGGED",
+    "eventType": "WASTE_LOGGED",
+    "actorId": "USR-NURSE-01",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8945",
+    "previousState": null,
+    "newState": {
+      "tagId": "CPCB-MH28-HOSP-01-20261016-8945",
+      "category": "Red",
+      "weightKg": 4.2,
+      "status": "Logged",
+      "qrCodeUrl": "/qrcodes/CPCB-MH28-HOSP-01-20261016-8945.png"
+    },
+    "details": {
+      "category": "Red",
+      "weightKg": 4.2,
+      "department": "Operation Theatre (OT)",
+      "qrCodeUrl": "/qrcodes/CPCB-MH28-HOSP-01-20261016-8945.png"
+    },
+    "previousHash": "6ed6066c7d06e843606e4f24dad8df8df7570d90a770b1637476d24d8e03819e",
+    "hash": "78bf5fa3b4f6c12035e57d5b2597245d76bb6bc6ec841e4822d0b4690f390388"
+  },
+  {
+    "id": "AUDIT-1792117407375-530",
+    "timestamp": "2026-10-16T02:23:27.375Z",
+    "actionType": "STATUS_TRANSITION",
+    "eventType": "STATUS_TRANSITION",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "Driver",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8945",
+    "previousState": {
+      "status": "Logged"
+    },
+    "newState": {
+      "status": "Collected"
+    },
+    "details": {
+      "previousStatus": "Logged",
+      "newStatus": "Collected",
+      "vehicleNumber": "MH-28-BD-9042",
+      "driverName": "Prakash Gawli"
+    },
+    "previousHash": "78bf5fa3b4f6c12035e57d5b2597245d76bb6bc6ec841e4822d0b4690f390388",
+    "hash": "24df1da70c0d197c4ef7c6e4d3a4736a7bcf8daf293b8bf2f62eb6741986efc6"
+  },
+  {
+    "id": "AUDIT-1792117422032-592",
+    "timestamp": "2026-10-16T02:23:42.032Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GLOBAL-001",
+    "actorName": "Dr. Vikramaditya Sen",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "ALL",
+    "entityId": "WRK-GLOBAL-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "MPCB-DIR-001"
+    },
+    "previousHash": "24df1da70c0d197c4ef7c6e4d3a4736a7bcf8daf293b8bf2f62eb6741986efc6",
+    "hash": "d69c1825cb81c7005f88c0963512cb4b2026044842430cc4dc5800028b10e2d3"
+  },
+  {
+    "id": "AUDIT-1792117469742-295",
+    "timestamp": "2026-10-16T02:24:29.742Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-003",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Clinical Staff / Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-003",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Clinical Staff / Nurse",
+      "badgeNumber": "KHM-GOV-NUR-05"
+    },
+    "previousHash": "d69c1825cb81c7005f88c0963512cb4b2026044842430cc4dc5800028b10e2d3",
+    "hash": "aed802af96b01ddc1bbca1428d9370e8df1695b69619493a60c5b30cbf1ff4b6"
+  },
+  {
+    "id": "AUDIT-1792117479792-942",
+    "timestamp": "2026-10-16T02:24:39.792Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "aed802af96b01ddc1bbca1428d9370e8df1695b69619493a60c5b30cbf1ff4b6",
+    "hash": "0a015e5bc24d43ec0c3b61f60675db4c88164df3a0f1355a2c0848f9cdfa9cea"
+  },
+  {
+    "id": "AUDIT-1792117489959-957",
+    "timestamp": "2026-10-16T02:24:49.959Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "0a015e5bc24d43ec0c3b61f60675db4c88164df3a0f1355a2c0848f9cdfa9cea",
+    "hash": "95750b2975b66a8543d680981de148f845d62e5a0971c941f98dfe2125e2065c"
+  },
+  {
+    "id": "AUDIT-1792117605730-695",
+    "timestamp": "2026-10-16T02:26:45.730Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "95750b2975b66a8543d680981de148f845d62e5a0971c941f98dfe2125e2065c",
+    "hash": "9849a75ed69c766c067d578d02decf105325a22c3716223827b1aefbd3615869"
+  },
+  {
+    "id": "AUDIT-1792118510984-562",
+    "timestamp": "2026-10-16T02:41:50.984Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "9849a75ed69c766c067d578d02decf105325a22c3716223827b1aefbd3615869",
+    "hash": "b4535b3f161aa2a0d0e4f9c2e3acb21ec7448f025243f3ad5e43e598d33774d6"
+  },
+  {
+    "id": "AUDIT-1792118690368-173",
+    "timestamp": "2026-10-16T02:44:50.368Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "b4535b3f161aa2a0d0e4f9c2e3acb21ec7448f025243f3ad5e43e598d33774d6",
+    "hash": "9ca53ea1901dd456b6bac096da4e8e0075635da4f70d02536ad97c1d860a1779"
+  },
+  {
+    "id": "AUDIT-1792118695124-975",
+    "timestamp": "2026-10-16T02:44:55.124Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "9ca53ea1901dd456b6bac096da4e8e0075635da4f70d02536ad97c1d860a1779",
+    "hash": "5e91365994d33a667281bdc68fde55cd18131d1b092c91311cd1db7c3c866c9d"
+  },
+  {
+    "id": "AUDIT-1792118703172-320",
+    "timestamp": "2026-10-16T02:45:03.172Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "5e91365994d33a667281bdc68fde55cd18131d1b092c91311cd1db7c3c866c9d",
+    "hash": "ad35e04830efcc57abb991a31b35f17196956cb6f3e43a639ca7c971dafc8d31"
+  },
+  {
+    "id": "AUDIT-1792118838413-30",
+    "timestamp": "2026-10-16T02:47:18.413Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "ad35e04830efcc57abb991a31b35f17196956cb6f3e43a639ca7c971dafc8d31",
+    "hash": "386f7ec7e0542cdd80c95e74c85bafa796b278c66bcb08efedf3662625e02a2e"
+  },
+  {
+    "id": "AUDIT-1792118838563-651",
+    "timestamp": "2026-10-16T02:47:18.563Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "386f7ec7e0542cdd80c95e74c85bafa796b278c66bcb08efedf3662625e02a2e",
+    "hash": "72a11b95b73340aa90bd62738e02aa60172ca7d4770fef8b46116912be917ec3"
+  },
+  {
+    "id": "AUDIT-1792118838690-521",
+    "timestamp": "2026-10-16T02:47:18.690Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-003",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Clinical Staff / Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-003",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Clinical Staff / Nurse",
+      "badgeNumber": "KHM-GOV-NUR-05"
+    },
+    "previousHash": "72a11b95b73340aa90bd62738e02aa60172ca7d4770fef8b46116912be917ec3",
+    "hash": "37736bfcb5fbec10127c3074bd4029fda4f9ff025b26a5f0c36c74f130c92a6c"
+  },
+  {
+    "id": "AUDIT-1792118838813-677",
+    "timestamp": "2026-10-16T02:47:18.813Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "37736bfcb5fbec10127c3074bd4029fda4f9ff025b26a5f0c36c74f130c92a6c",
+    "hash": "d22ae2400431d3e4b3bf39184d28b9ba5441fc8063c8538b3856ef1be10a342e"
+  },
+  {
+    "id": "AUDIT-1792118838818-935",
+    "timestamp": "2026-10-16T02:47:18.818Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GLOBAL-001",
+    "actorName": "Dr. Vikramaditya Sen",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "ALL",
+    "entityId": "WRK-GLOBAL-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "MPCB-DIR-001"
+    },
+    "previousHash": "d22ae2400431d3e4b3bf39184d28b9ba5441fc8063c8538b3856ef1be10a342e",
+    "hash": "243ebca8463f231332faa74c73797b1e3d03f8617d64745e101dfad8679494c3"
+  },
+  {
+    "id": "AUDIT-1792118843729-667",
+    "timestamp": "2026-10-16T02:47:23.729Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "243ebca8463f231332faa74c73797b1e3d03f8617d64745e101dfad8679494c3",
+    "hash": "cade9585ef863516c88f736e5eca7a244c67c118811585067fbf2f3365b1b8da"
+  },
+  {
+    "id": "AUDIT-1792118843861-815",
+    "timestamp": "2026-10-16T02:47:23.861Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "cade9585ef863516c88f736e5eca7a244c67c118811585067fbf2f3365b1b8da",
+    "hash": "c2a1621b2b46ab682fa00e6f4a6fe595376627a2af513ba9d3e8bbd9ad760a57"
+  },
+  {
+    "id": "AUDIT-1792118916885-427",
+    "timestamp": "2026-10-16T02:48:36.884Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "c2a1621b2b46ab682fa00e6f4a6fe595376627a2af513ba9d3e8bbd9ad760a57",
+    "hash": "f29f89b39313e6d0d234d4a78dba5a17eb49b79aad2b49ac46a5aad198547b40"
+  },
+  {
+    "id": "AUDIT-1792119065975-994",
+    "timestamp": "2026-10-16T02:51:05.975Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "f29f89b39313e6d0d234d4a78dba5a17eb49b79aad2b49ac46a5aad198547b40",
+    "hash": "135f4f493ee639c9421945773eed2ce6291dbff58ec635fdbcda9db20f69f38d"
+  },
+  {
+    "id": "AUDIT-1792119244838-870",
+    "timestamp": "2026-10-16T02:54:04.838Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "135f4f493ee639c9421945773eed2ce6291dbff58ec635fdbcda9db20f69f38d",
+    "hash": "5e52c185007b038fbbd70349568b2a784790fd23f98181047ca280fd9304c499"
+  },
+  {
+    "id": "AUDIT-1792119252896-960",
+    "timestamp": "2026-10-16T02:54:12.896Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "5e52c185007b038fbbd70349568b2a784790fd23f98181047ca280fd9304c499",
+    "hash": "98dd9af8a4ee69a7e945b5db02211b397b5001469f085808e77a5fe3fae4d063"
+  },
+  {
+    "id": "AUDIT-1792119252911-427",
+    "timestamp": "2026-10-16T02:54:12.911Z",
+    "actionType": "STATUS_TRANSITION",
+    "eventType": "STATUS_TRANSITION",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8847",
+    "previousState": {
+      "status": "Logged"
+    },
+    "newState": {
+      "status": "Collected"
+    },
+    "details": {
+      "previousStatus": "Logged",
+      "newStatus": "Collected",
+      "vehicleNumber": "MH-15-BW-4092",
+      "driverName": "Prakash Gawli"
+    },
+    "previousHash": "98dd9af8a4ee69a7e945b5db02211b397b5001469f085808e77a5fe3fae4d063",
+    "hash": "fcb3b644fcc46d17d80ba98e8fe6bd44b59e7de6b98b08547efb8dd850e1fcb8"
+  },
+  {
+    "id": "AUDIT-1792119252917-392",
+    "timestamp": "2026-10-16T02:54:12.917Z",
+    "actionType": "STATUS_TRANSITION",
+    "eventType": "STATUS_TRANSITION",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8847",
+    "previousState": {
+      "status": "Collected"
+    },
+    "newState": {
+      "status": "Delivered",
+      "certification": "CERT-CBWTF-1792119252917"
+    },
+    "details": {
+      "previousStatus": "Collected",
+      "newStatus": "Delivered",
+      "vehicleNumber": "MH-15-BW-4092",
+      "driverName": "Prakash Gawli",
+      "certification": "CERT-CBWTF-1792119252917"
+    },
+    "previousHash": "fcb3b644fcc46d17d80ba98e8fe6bd44b59e7de6b98b08547efb8dd850e1fcb8",
+    "hash": "046686b8bc00233053a76848cb68c8761dd0408caba6ea8610069d641f0b4874"
+  },
+  {
+    "id": "AUDIT-1792119265105-678",
+    "timestamp": "2026-10-16T02:54:25.105Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GLOBAL-001",
+    "actorName": "Dr. Vikramaditya Sen",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "ALL",
+    "entityId": "WRK-GLOBAL-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "MPCB-DIR-001"
+    },
+    "previousHash": "046686b8bc00233053a76848cb68c8761dd0408caba6ea8610069d641f0b4874",
+    "hash": "815df310ba4460c8194577c481bd39bd35608a492fdfab5f1a347332b040c119"
+  },
+  {
+    "id": "AUDIT-1792119380115-170",
+    "timestamp": "2026-10-16T02:56:20.115Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "815df310ba4460c8194577c481bd39bd35608a492fdfab5f1a347332b040c119",
+    "hash": "911bfe4ac5f9af2dc7e40513543423a818db80584b77903d90ef970ffa388750"
+  },
+  {
+    "id": "AUDIT-1792119408696-457",
+    "timestamp": "2026-10-16T02:56:48.696Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-002",
+    "actorName": "Dr. Nitin Sonone",
+    "actorRole": "Doctor / Lead Surgeon",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-002",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Doctor / Lead Surgeon",
+      "badgeNumber": "KHM-GOV-DOC-02"
+    },
+    "previousHash": "911bfe4ac5f9af2dc7e40513543423a818db80584b77903d90ef970ffa388750",
+    "hash": "3348be35a040727c98f485bef48f9c2b031388c29cda42e3fb837b20d6416691"
+  },
+  {
+    "id": "AUDIT-1792119737941-37",
+    "timestamp": "2026-10-16T03:02:17.941Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "3348be35a040727c98f485bef48f9c2b031388c29cda42e3fb837b20d6416691",
+    "hash": "a8f3fa2a75fd5586e10c083c221d988518f070d05c69afe017052ee28e28217b"
+  },
+  {
+    "id": "AUDIT-1792119754984-215",
+    "timestamp": "2026-10-16T03:02:34.984Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Chief Medical Superintendent",
+      "badgeNumber": "KHM-GOV-SUP-01"
+    },
+    "previousHash": "a8f3fa2a75fd5586e10c083c221d988518f070d05c69afe017052ee28e28217b",
+    "hash": "7d9f4d0cd445186b4a51d0ce6550d64520339a209e034f7e25391076267fb226"
+  },
+  {
+    "id": "AUDIT-1792119800240-774",
+    "timestamp": "2026-10-16T03:03:20.240Z",
+    "actionType": "STATUS_TRANSITION",
+    "eventType": "STATUS_TRANSITION",
+    "actorId": "WRK-GOV-001",
+    "actorName": "Dr. Ravindra Patil",
+    "actorRole": "Chief Medical Superintendent",
+    "hospitalId": "HOSP-01",
+    "entityId": "CPCB-MH28-HOSP-01-20261016-8847",
+    "previousState": {
+      "status": "Delivered"
+    },
+    "newState": {
+      "status": "Awaiting Pickup",
+      "certification": "CERT-CBWTF-1792119252917"
+    },
+    "details": {
+      "previousStatus": "Delivered",
+      "newStatus": "Awaiting Pickup",
+      "vehicleNumber": "MH-15-BW-4092",
+      "driverName": "Prakash Gawli",
+      "certification": "CERT-CBWTF-1792119252917"
+    },
+    "previousHash": "7d9f4d0cd445186b4a51d0ce6550d64520339a209e034f7e25391076267fb226",
+    "hash": "b8f79c0cbad19fd2d0ab16f948806db60760d7cb6d699652c1f3a15c994425c4"
+  },
+  {
+    "id": "AUDIT-1792119812396-862",
+    "timestamp": "2026-10-16T03:03:32.396Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-003",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Clinical Staff / Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-003",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Clinical Staff / Nurse",
+      "badgeNumber": "KHM-GOV-NUR-05"
+    },
+    "previousHash": "b8f79c0cbad19fd2d0ab16f948806db60760d7cb6d699652c1f3a15c994425c4",
+    "hash": "537523c63b50fbe295e969914d17b13b814e9eed42cfbb83b5a5c619acbb33c8"
+  },
+  {
+    "id": "AUDIT-1792120046870-698",
+    "timestamp": "2026-10-16T03:07:26.870Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "537523c63b50fbe295e969914d17b13b814e9eed42cfbb83b5a5c619acbb33c8",
+    "hash": "ce8d965eddb0eb360261734e465c2b910cb9f7cfff8bd11212c65516823bad26"
+  },
+  {
+    "id": "AUDIT-1792120154685-359",
+    "timestamp": "2026-10-16T03:09:14.685Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "ce8d965eddb0eb360261734e465c2b910cb9f7cfff8bd11212c65516823bad26",
+    "hash": "09db4859826d1c01d23b26734aa1b95613fa8929d8f0f8cea485e9acb561b4cf"
+  },
+  {
+    "id": "AUDIT-1792120276648-904",
+    "timestamp": "2026-10-16T03:11:16.648Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "09db4859826d1c01d23b26734aa1b95613fa8929d8f0f8cea485e9acb561b4cf",
+    "hash": "f32c6a4b05542143815a35a2b7d1b3853ad951b4d0a628bac68d13521511009a"
+  },
+  {
+    "id": "AUDIT-1792120332010-979",
+    "timestamp": "2026-10-16T03:12:12.010Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-GOV-003",
+    "actorName": "Sister Sunita Tayade",
+    "actorRole": "Clinical Staff / Nurse",
+    "hospitalId": "HOSP-01",
+    "entityId": "WRK-GOV-003",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "Clinical Staff / Nurse",
+      "badgeNumber": "KHM-GOV-NUR-05"
+    },
+    "previousHash": "f32c6a4b05542143815a35a2b7d1b3853ad951b4d0a628bac68d13521511009a",
+    "hash": "636453555a6641d441e9bee0f875c548d08f1899496bb8eb257538af49e2ae95"
+  },
+  {
+    "id": "AUDIT-1792120364724-947",
+    "timestamp": "2026-10-16T03:12:44.724Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "636453555a6641d441e9bee0f875c548d08f1899496bb8eb257538af49e2ae95",
+    "hash": "dc5c23bdfd2cb29c32305f79d98686f95ffcb1b39f718dd6180ee1be80010f9d"
+  },
+  {
+    "id": "AUDIT-1792121201384-856",
+    "timestamp": "2026-10-16T03:26:41.384Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28"
+    },
+    "previousHash": "dc5c23bdfd2cb29c32305f79d98686f95ffcb1b39f718dd6180ee1be80010f9d",
+    "hash": "8ea9835dde391fc443f1d2b743a2b1c0d923355c9d930ae8d48b0d698f7acf42"
+  },
+  {
+    "id": "AUDIT-1792121484965-227",
+    "timestamp": "2026-10-16T03:31:24.965Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28",
+      "active_session_id": "sess_1792121484963_e9cc3b8d94bb",
+      "reclaimed": false
+    },
+    "previousHash": "8ea9835dde391fc443f1d2b743a2b1c0d923355c9d930ae8d48b0d698f7acf42",
+    "hash": "a18c84adb945cbd48f7e7368942aef763a8263653f2240be09f2fb9b2911536c"
+  },
+  {
+    "id": "AUDIT-1792121846802-389",
+    "timestamp": "2026-10-16T03:37:26.802Z",
+    "actionType": "AUTH_LOGIN_SUCCESS",
+    "eventType": "AUTH_LOGIN_SUCCESS",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "role": "CBWTF Transport Custodian",
+      "badgeNumber": "CBWTF-DRV-28",
+      "active_session_id": "sess_1792121846800_6dcad9d9257b",
+      "reclaimed": false
+    },
+    "previousHash": "a18c84adb945cbd48f7e7368942aef763a8263653f2240be09f2fb9b2911536c",
+    "hash": "83d510da8d17b5f8cf8369624404f29248ee1650b4eef4cac3519ea5aa6c93e4"
+  },
+  {
+    "id": "AUDIT-1792121854497-966",
+    "timestamp": "2026-10-16T03:37:34.497Z",
+    "actionType": "CONCURRENT_LOGIN_BLOCKED",
+    "eventType": "CONCURRENT_LOGIN_BLOCKED",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "CBWTF Transport Custodian",
+    "hospitalId": "CBWTF-01",
+    "entityId": "WRK-CBWTF-001",
+    "previousState": null,
+    "newState": null,
+    "details": {
+      "reason": "Concurrent session rejected",
+      "active_session_id": "sess_1792121846800_6dcad9d9257b",
+      "last_active_at": "2026-10-16T03:37:26.800Z"
+    },
+    "previousHash": "83d510da8d17b5f8cf8369624404f29248ee1650b4eef4cac3519ea5aa6c93e4",
+    "hash": "4ac196eaa656ee76b5dd33c5ddfe8f43068454751164f5547ed6f9d237f66f5e"
+  },
+  {
+    "id": "AUDIT-1792121854513-771",
+    "timestamp": "2026-10-16T03:37:34.513Z",
+    "actionType": "STATUS_TRANSITION",
+    "eventType": "STATUS_TRANSITION",
+    "actorId": "WRK-CBWTF-001",
+    "actorName": "Prakash Gawli",
+    "actorRole": "Driver",
+    "hospitalId": "HOSP-02",
+    "entityId": "KHM-DWK-2026-01",
+    "previousState": {
+      "status": "Awaiting Pickup"
+    },
+    "newState": {
+      "status": "In Transit"
+    },
+    "details": {
+      "previousStatus": "Awaiting Pickup",
+      "newStatus": "In Transit",
+      "vehicleNumber": "MH-15-BW-4092",
+      "driverName": "Prakash Gawli"
+    },
+    "previousHash": "4ac196eaa656ee76b5dd33c5ddfe8f43068454751164f5547ed6f9d237f66f5e",
+    "hash": "2781fe58990397a3cca8bce67b2846ef976a9ec37340a3aa67f3791fe59361c8"
   }
 ]
