@@ -22,8 +22,6 @@ import QRScannerModal from './QRScannerModal';
 const HOSPITAL_PRESETS = [
   { name: 'Government Hospital of Khamgaon', lat: 20.6920, lng: 76.5695 },
   { name: 'Dwarka Hospital of Khamgaon', lat: 20.6854, lng: 76.5742 },
-  { name: 'Anand Hospital of Khamgaon', lat: 20.6812, lng: 76.5615 },
-  { name: 'Dr. Hedgewar Rugnalaya Khamgaon', lat: 20.6970, lng: 76.5720 },
 ];
 
 export default function WasteLogModal({ 

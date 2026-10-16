@@ -88,8 +88,6 @@ export default function LiveMapView({
     const waypoints = [
       { lat: 20.6920, lng: 76.5695 }, // Government Hospital of Khamgaon
       { lat: 20.6854, lng: 76.5742 }, // Dwarka Hospital of Khamgaon
-      { lat: 20.6812, lng: 76.5615 }, // Anand Hospital of Khamgaon
-      { lat: 20.6970, lng: 76.5720 }, // Dr. Hedgewar Rugnalaya Khamgaon
       { lat: 20.6720, lng: 76.5450 }, // Khamgaon CBWTF Plant (MIDC)
     ];
 

@@ -130,35 +130,13 @@ export default function MultiHospitalDriverRouteView({
         name: 'Dwarka Hospital of Khamgaon',
         zone: 'Nandura Rd Highway Corridor',
         cpcbCode: 'MPCB-KHM-DWK-2023',
-        x: 340,
-        y: 110,
+        x: 440,
+        y: 180,
         lat: 20.6854,
         lng: 76.5742,
       },
       {
         stopIndex: 2,
-        hospitalId: 'HOSP-03',
-        name: 'Anand Hospital of Khamgaon',
-        zone: 'Ghatpuri Naka / Balaji Plots',
-        cpcbCode: 'MPCB-KHM-AND-2022',
-        x: 520,
-        y: 150,
-        lat: 20.6812,
-        lng: 76.5615,
-      },
-      {
-        stopIndex: 3,
-        hospitalId: 'HOSP-04',
-        name: 'Dr. Hedgewar Rugnalaya Khamgaon',
-        zone: 'Station Road Sector',
-        cpcbCode: 'MPCB-KHM-HDG-2024',
-        x: 640,
-        y: 280,
-        lat: 20.6970,
-        lng: 76.5720,
-      },
-      {
-        stopIndex: 4,
         hospitalId: 'CBWTF-01',
         name: 'Khamgaon Central CBWTF Treatment Plant',
         zone: 'MIDC Industrial Treatment Park',
@@ -578,8 +556,8 @@ export default function MultiHospitalDriverRouteView({
           </div>
 
           <div className="flex items-center justify-between mt-3 text-xs text-slate-400 pt-2 border-t border-slate-800">
-            <span>Active Circuit: Government Hospital → Dwarka → Anand → Hedgewar → CBWTF MIDC</span>
-            <span className="font-mono text-slate-300">Total Distance: 34.2 km</span>
+            <span>Active Circuit: Government Sub-District Hospital → Dwarka Hospital → CBWTF MIDC Plant</span>
+            <span className="font-mono text-slate-300">Total Distance: 18.5 km</span>
           </div>
         </div>
 

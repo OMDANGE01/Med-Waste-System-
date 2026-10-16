@@ -51,8 +51,6 @@ async function createMedWasteApk() {
         networkHospitals: [
           'Government Hospital of Khamgaon',
           'Dwarka Hospital & Critical Care',
-          'Anand Hospital & Maternity Home',
-          'Dr. Hedgewar Rugnalaya',
           'Khamgaon Central Bio-Medical Treatment Facility (CBWTF)'
         ],
         permissions: [
@@ -154,9 +152,7 @@ SHA-256-Digest-Manifest: ${crypto.createHash('sha256').update(manifestMf).digest
       hospitals: [
         { id: 'HOSP-01', name: 'Government Hospital of Khamgaon', beds: 100 },
         { id: 'HOSP-02', name: 'Dwarka Hospital & Critical Care', beds: 65 },
-        { id: 'HOSP-03', name: 'Anand Hospital & Maternity Home', beds: 40 },
-        { id: 'HOSP-04', name: 'Dr. Hedgewar Rugnalaya', beds: 80 },
-        { id: 'HOSP-05', name: 'Khamgaon Central Treatment Facility (CBWTF)', type: 'CBWTF' }
+        { id: 'CBWTF-01', name: 'Khamgaon Central Treatment Facility (CBWTF)', type: 'CBWTF' }
       ]
     };
     archive.append(JSON.stringify(appConfig, null, 2), { name: 'assets/app-config.json' });

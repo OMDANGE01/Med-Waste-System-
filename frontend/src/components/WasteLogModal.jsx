@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Flame, Recycle, Scissors, Wine, QrCode, AlertCircle, Save, Building2, MapPin, Navigation } from 'lucide-react';
+import { X, Flame, Recycle, Scissors, Wine, QrCode, AlertCircle, Save, Building2, MapPin, Navigation, Camera, Sparkles } from 'lucide-react';
+import QRScannerModal from './QRScannerModal';
 
 const HOSPITAL_PRESETS = [
   { name: 'St. Jude Memorial Hospital', lat: 19.9975, lng: 73.7898 },
@@ -29,6 +30,19 @@ export default function WasteLogModal({ isOpen, onClose, onSave, editingRecord }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [customHospital, setCustomHospital] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  // FIXED: Camera barcode scanning success handler for quick bag ID entry
+  const handleScanSuccess = (tagId, sampleItem) => {
+    setFormData((prev) => ({
+      ...prev,
+      tagId: tagId || prev.tagId,
+      category: sampleItem?.category || prev.category,
+      department: sampleItem?.dept || prev.department,
+      weightKg: sampleItem?.weight || prev.weightKg,
+    }));
+    setIsScannerOpen(false);
+  };
 
   useEffect(() => {
     if (editingRecord) {

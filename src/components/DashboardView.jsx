@@ -70,26 +70,6 @@ const DEFAULT_NETWORK_HOSPITALS = [
     type: 'Private Multispeciality Hospital',
     bedCapacity: 120,
     status: 'Operational'
-  },
-  {
-    name: 'Anand Hospital of Khamgaon',
-    code: 'MPCB-KHM-AND-2022',
-    address: 'Ghatpuri Naka, Balaji Plots, Khamgaon, MH 444303',
-    lat: 20.6812,
-    lng: 76.5615,
-    type: 'Accident & Trauma Hospital',
-    bedCapacity: 80,
-    status: 'Operational'
-  },
-  {
-    name: 'Dr. Hedgewar Rugnalaya Khamgaon',
-    code: 'MPCB-KHM-HDG-2024',
-    address: 'Station Road, Opposite Railway Colony, Khamgaon, MH 444303',
-    lat: 20.6970,
-    lng: 76.5720,
-    type: 'Charitable Trust Hospital',
-    bedCapacity: 100,
-    status: 'Operational'
   }
 ];
 

@@ -1,20 +1,37 @@
 import React, { useState } from 'react';
 import { X, Truck, Calendar, Phone, CheckSquare, Square, Save, AlertCircle } from 'lucide-react';
 
-export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendingWaste }) {
+// FIXED: Sync selectedTagIds and compute validSelectedTags dynamically
+export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendingWaste = [], onQuickLogSample }) {
   const [formData, setFormData] = useState({
     treatmentFacility: 'Apex Bio-Clean & Incineration Services (CBWTF)',
     vehicleNumber: 'WB-04-E-9022',
     driverName: 'Robert Langdon',
     driverPhone: '+1 (555) 349-8821',
-    selectedTagIds: pendingWaste.map((w) => w.tagId), // Default select all eligible
+    selectedTagIds: (pendingWaste || []).map((w) => w.tagId), // Default select all eligible
     notes: '',
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // FIXED: Synchronize selected tags whenever modal opens or pendingWaste changes to prevent stale counts
+  React.useEffect(() => {
+    if (isOpen) {
+      const validTags = (pendingWaste || []).map((w) => w.tagId);
+      setFormData((prev) => ({
+        ...prev,
+        selectedTagIds: validTags,
+      }));
+    }
+  }, [isOpen, pendingWaste]);
+
   if (!isOpen) return null;
+
+  // FIXED: Only count tags that actually exist in the current pendingWaste array
+  const validSelectedTags = (formData.selectedTagIds || []).filter((id) =>
+    (pendingWaste || []).some((w) => w.tagId === id)
+  );
 
   const toggleTag = (tagId) => {
     setFormData((prev) => {
@@ -31,7 +48,7 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
   const selectAll = () => {
     setFormData((prev) => ({
       ...prev,
-      selectedTagIds: pendingWaste.map((w) => w.tagId),
+      selectedTagIds: (pendingWaste || []).map((w) => w.tagId),
     }));
   };
 
@@ -39,8 +56,8 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
     setFormData((prev) => ({ ...prev, selectedTagIds: [] }));
   };
 
-  const selectedTotalWeight = pendingWaste
-    .filter((w) => formData.selectedTagIds.includes(w.tagId))
+  const selectedTotalWeight = (pendingWaste || [])
+    .filter((w) => validSelectedTags.includes(w.tagId))
     .reduce((acc, w) => acc + (Number(w.weightKg) || 0), 0);
 
   const validate = () => {
@@ -171,23 +188,32 @@ export default function PickupScheduleModal({ isOpen, onClose, onSchedule, pendi
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-slate-300">
-                Select Waste Bags for Consignment ({formData.selectedTagIds.length} of {pendingWaste.length} selected)
+                Select Waste Bags for Consignment ({validSelectedTags.length} of {pendingWaste.length} selected)
               </label>
               <div className="flex items-center gap-2 text-xs">
-                <button type="button" onClick={selectAll} className="text-rose-400 hover:text-rose-300">Select All</button>
+                <button type="button" onClick={selectAll} className="text-rose-400 hover:text-rose-300 cursor-pointer">Select All</button>
                 <span className="text-slate-600">•</span>
-                <button type="button" onClick={deselectAll} className="text-slate-400 hover:text-slate-200">Clear</button>
+                <button type="button" onClick={deselectAll} className="text-slate-400 hover:text-slate-200 cursor-pointer">Clear</button>
               </div>
             </div>
 
             {pendingWaste.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 text-center text-xs text-slate-400">
-                No bags currently in 'Logged' or 'Awaiting Pickup' status. All on-site waste is already dispatched!
+              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2 text-xs text-slate-400">
+                <p>No bags currently in 'Logged' or 'Awaiting Pickup' status at this hospital. All on-site waste is already dispatched!</p>
+                {onQuickLogSample && (
+                  <button
+                    type="button"
+                    onClick={onQuickLogSample}
+                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition"
+                  >
+                    + Generate Sample Bag for Pickup
+                  </button>
+                )}
               </div>
             ) : (
               <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
                 {pendingWaste.map((w) => {
-                  const isChecked = formData.selectedTagIds.includes(w.tagId);
+                  const isChecked = validSelectedTags.includes(w.tagId);
                   return (
                     <div
                       key={w.tagId}

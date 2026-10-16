@@ -36,7 +36,10 @@ export default function Toast({ toasts, onDismiss }) {
               <div>{toast.message}</div>
             </div>
             <button
-              onClick={() => onDismiss(toast.id)}
+              onClick={() => {
+                if (typeof onDismiss === 'function') onDismiss(toast.id);
+                else if (typeof toast.onDismiss === 'function') toast.onDismiss(toast.id);
+              }}
               className="text-slate-400 hover:text-white transition-colors p-1"
             >
               <X className="w-4 h-4" />

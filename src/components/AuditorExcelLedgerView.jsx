@@ -601,8 +601,6 @@ export default function AuditorExcelLedgerView({
               <option value="all">All Connected Hospitals</option>
               <option value="HOSP-01">Government Hospital of Khamgaon</option>
               <option value="HOSP-02">Dwarka Hospital of Khamgaon</option>
-              <option value="HOSP-03">Anand Hospital of Khamgaon</option>
-              <option value="HOSP-04">Dr. Hedgewar Rugnalaya Khamgaon</option>
               <option value="CBWTF-01">Khamgaon Central CBWTF Plant</option>
             </select>
           </div>
