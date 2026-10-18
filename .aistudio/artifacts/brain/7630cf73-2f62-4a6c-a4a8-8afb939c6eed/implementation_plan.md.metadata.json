@@ -1,6 +1,0 @@
-{
-  "summary": "Implementation plan for crafting a responsive, dual-form-factor layout and unified design system optimized for both desktop web browsers and mobile phone screens. Features an adaptive layout architecture that transforms between a multi-column desktop command dashboard (collapsible sidebar, data tables, map split views) and an ergonomic mobile touch interface (compact app bar, touch-friendly swipe cards, fixed bottom tab bar with elevated central action).",
-  "updatedAt": "2026-10-13T10:13:16.403755377Z",
-  "requestFeedback": true,
-  "userFacing": true
-}
