@@ -4,6 +4,11 @@
 
 ---
 
+
+https://med-waste.ai.studio
+
+
+
 ## 🌟 Key Features & Modules
 
 ### 1. 📊 Executive Biohazard Analytics Dashboard
