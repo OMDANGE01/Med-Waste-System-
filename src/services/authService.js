@@ -61,7 +61,8 @@ export const authService = {
       return { success: false, message: res.message || 'Failed to provision superintendent.' };
     } catch (err) {
       return { success: false, message: err.message || 'Provisioning error.' };
-    }
+   
+ }
   },
 
   /**
