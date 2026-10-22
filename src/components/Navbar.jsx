@@ -182,23 +182,6 @@ export default function Navbar({
 
           {/* Right: Actions & User Authenticated Profile */}
           <div className="flex items-center space-x-2.5">
-            {/* APK Download Button */}
-            {onOpenApkModal && (
-              <button
-                type="button"
-                onClick={onOpenApkModal}
-                title="Download CPCB Android App (.APK)"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition shadow-xs ${
-                  theme === 'dark'
-                    ? 'bg-slate-800/90 hover:bg-slate-700 text-emerald-400 border-emerald-500/30'
-                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Get APK</span>
-              </button>
-            )}
-
             {/* Theme Toggle */}
             {toggleTheme && (
               <button

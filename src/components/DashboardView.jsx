@@ -587,26 +587,22 @@ export default function DashboardView({
           </div>
 
           {/* Category Descriptions Footer */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-800 text-[11px]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-[11px]">
             <div className="flex items-center gap-1.5 text-amber-300">
               <span className="w-2 h-2 rounded-full bg-amber-400"></span>
               <span>Yellow: Anatomical</span>
             </div>
             <div className="flex items-center gap-1.5 text-rose-300">
               <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-              <span>Red: Recyclable/Sharps</span>
+              <span>Red: Recyclable Plastics</span>
             </div>
             <div className="flex items-center gap-1.5 text-sky-300">
               <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-              <span>Blue: Glassware</span>
+              <span>Blue: Glassware & Implants</span>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-slate-300"></span>
-              <span>White: Translucent</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
-              <span>Black: Cytotoxic</span>
+            <div className="flex items-center gap-1.5 text-slate-200">
+              <span className="w-2 h-2 rounded-full bg-slate-200"></span>
+              <span>White: Sharps (Needles/Blades)</span>
             </div>
           </div>
         </div>

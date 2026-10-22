@@ -321,137 +321,6 @@
       "disposedAt": "2026-10-16T02:54:12.917Z",
       "disposalFacility": "Khamgaon Central Bio-Medical Waste Treatment Facility (CBWTF MIDC)",
       "certification": "CERT-CBWTF-1792119252917"
-    },
-    {
-      "_id": "waste_1",
-      "tagId": "waste_1",
-      "category": "Yellow",
-      "department": "Operating Theater (OT-1 & OT-2)",
-      "weightKg": 8.5,
-      "status": "Awaiting Pickup",
-      "handlerName": "Sister Sunita Tayade",
-      "hospitalId": "HOSP-01",
-      "hospitalName": "Government Hospital of Khamgaon",
-      "location": "OT-1 Surgical Scrub Room",
-      "lat": 20.692,
-      "lng": 76.5695,
-      "hazardLevel": "High-Risk Anatomical",
-      "notes": "Post-operative anatomical tissue, contaminated surgical swabs, laparotomy gauze.",
-      "createdAt": "2026-10-16T00:18:18.983Z",
-      "updatedAt": "2026-10-16T02:42:07.828Z"
-    },
-    {
-      "_id": "waste_2",
-      "tagId": "KHM-GOV-2026-02",
-      "category": "Red",
-      "department": "Emergency & Trauma",
-      "weightKg": 5.4,
-      "status": "Awaiting Pickup",
-      "handlerName": "Santosh Wankhede",
-      "hospitalId": "HOSP-01",
-      "hospitalName": "Government Hospital of Khamgaon",
-      "location": "Trauma Bay Holding Rack",
-      "lat": 20.6922,
-      "lng": 76.5698,
-      "hazardLevel": "Bio-Infectious Plastic",
-      "notes": "Contaminated IV fluid tubes, blood transfusion sets, suction catheters.",
-      "createdAt": "2026-10-15T22:18:18.983Z",
-      "updatedAt": "2026-10-16T01:18:18.983Z"
-    },
-    {
-      "_id": "waste_3",
-      "tagId": "KHM-GOV-2026-03",
-      "category": "Blue",
-      "department": "Pathology Lab",
-      "weightKg": 3.2,
-      "status": "Awaiting Pickup",
-      "handlerName": "Dr. Nitin Sonone",
-      "hospitalId": "HOSP-01",
-      "hospitalName": "Government Hospital of Khamgaon",
-      "location": "Clinical Pathology Storage",
-      "lat": 20.6918,
-      "lng": 76.5692,
-      "hazardLevel": "Bio-Infectious Glassware",
-      "notes": "Disinfected glass specimen vials, microscope culture slides, medicine ampoules.",
-      "createdAt": "2026-10-15T21:18:18.983Z",
-      "updatedAt": "2026-10-16T00:18:18.983Z"
-    },
-    {
-      "_id": "waste_4",
-      "tagId": "KHM-DWK-2026-01",
-      "category": "Yellow",
-      "department": "ICCU & Critical Care",
-      "weightKg": 6.8,
-      "status": "In Transit",
-      "handlerName": "Sister Rekha Gawande",
-      "hospitalId": "HOSP-02",
-      "hospitalName": "Dwarka Hospital of Khamgaon",
-      "location": "ICCU Isolation Unit 3",
-      "lat": 20.6854,
-      "lng": 76.5742,
-      "hazardLevel": "Infectious Clinical Waste",
-      "notes": "Soiled wound dressings, infectious bedside gowns, COVID/swine flu isolation swabs.",
-      "createdAt": "2026-10-15T23:18:18.983Z",
-      "updatedAt": "2026-10-16T03:37:34.512Z",
-      "collectedAt": "2026-10-16T03:37:34.512Z",
-      "inTransitAt": "2026-10-16T03:37:34.512Z",
-      "vehicleNumber": "MH-15-BW-4092",
-      "driverName": "Prakash Gawli"
-    },
-    {
-      "_id": "waste_5",
-      "tagId": "KHM-DWK-2026-02",
-      "category": "Red",
-      "department": "Dialysis Unit",
-      "weightKg": 7.2,
-      "status": "In Transit",
-      "handlerName": "Ramesh Solanke",
-      "hospitalId": "HOSP-02",
-      "hospitalName": "Dwarka Hospital of Khamgaon",
-      "location": "Dialyzer Reprocessing Station",
-      "lat": 20.6856,
-      "lng": 76.5745,
-      "hazardLevel": "Contaminated Plastic",
-      "notes": "Hemodialysis lines, tubing sets, saline flush sets, plastic urine bags.",
-      "createdAt": "2026-10-15T20:18:18.983Z",
-      "updatedAt": "2026-10-16T01:18:18.983Z"
-    },
-    {
-      "_id": "waste_6",
-      "tagId": "KHM-DWK-2026-03",
-      "category": "White",
-      "department": "Advanced Surgical Suite",
-      "weightKg": 1.6,
-      "status": "Disposed",
-      "handlerName": "Dr. Ashish Dwarka",
-      "hospitalId": "HOSP-02",
-      "hospitalName": "Dwarka Hospital of Khamgaon",
-      "location": "OT Sharps Vault",
-      "lat": 20.6852,
-      "lng": 76.5739,
-      "hazardLevel": "Sharp Hazard",
-      "notes": "Puncture-proof container: scalpels, disposable hypodermic needles, trocars.",
-      "createdAt": "2026-10-15T06:18:18.983Z",
-      "updatedAt": "2026-10-15T18:18:18.983Z",
-      "disposedAt": "2026-10-15T18:18:18.983Z"
-    },
-    {
-      "_id": "waste_11",
-      "tagId": "KHM-GOV-2026-04",
-      "category": "White",
-      "department": "Operating Theater (OT-1 & OT-2)",
-      "weightKg": 1.4,
-      "status": "Awaiting Pickup",
-      "handlerName": "Dr. Ravindra Patil",
-      "hospitalId": "HOSP-01",
-      "hospitalName": "Government Hospital of Khamgaon",
-      "location": "OT Sharps Bin Station",
-      "lat": 20.692,
-      "lng": 76.5695,
-      "hazardLevel": "Sharp Hazard",
-      "notes": "Surgical suture needles, scalpel blades #11 and #15, lumbar puncture trocars.",
-      "createdAt": "2026-10-15T23:18:18.983Z",
-      "updatedAt": "2026-10-16T01:18:18.983Z"
     }
   ],
   "pickups": [
@@ -464,13 +333,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": "51.5",
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "createdAt": "2026-10-16T03:12:29.359Z",
@@ -486,13 +351,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": "51.5",
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "createdAt": "2026-10-16T03:12:29.358Z",
@@ -509,13 +370,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": 51.5,
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "scheduledDate": "2026-10-16T03:12:29.318Z",
@@ -532,13 +389,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": "51.5",
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "createdAt": "2026-10-16T03:12:28.779Z",
@@ -555,13 +408,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": 51.5,
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "scheduledDate": "2026-10-16T03:12:27.697Z",
@@ -579,13 +428,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": 51.5,
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "scheduledDate": "2026-10-16T03:12:27.138Z",
@@ -602,13 +447,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": "51.5",
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "createdAt": "2026-10-16T03:12:25.114Z",
@@ -625,13 +466,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": 51.5,
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "scheduledDate": "2026-10-16T03:12:25.079Z",
@@ -648,13 +485,9 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": "51.5",
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "createdAt": "2026-10-16T03:03:50.318Z",
@@ -671,69 +504,15 @@
       "wasteRecordIds": [
         "waste_1792118586408_889",
         "waste_1792117400877_76",
-        "waste_1792117327038_495",
-        "waste_1",
-        "KHM-GOV-2026-04",
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03"
+        "waste_1792117327038_495"
       ],
-      "totalWeightKg": 51.5,
+      "totalWeightKg": 33.03,
       "notes": "Pickup called by Sister Sunita Tayade (Government Hospital of Khamgaon): Central Holding Dock B, ground floor entrance.",
       "status": "Completed",
       "scheduledDate": "2026-10-16T03:03:50.276Z",
       "createdAt": "2026-10-16T03:03:50.276Z",
       "completedDate": "2026-10-16T03:08:47.281Z",
       "updatedAt": "2026-10-16T03:08:47.281Z"
-    },
-    {
-      "_id": "pickup_1",
-      "manifestNumber": "MAN-KHM-2026-001",
-      "treatmentFacility": "Khamgaon Central Bio-Medical Waste Treatment Facility (CBWTF)",
-      "vehicleNumber": "MH-28-BW-2040",
-      "driverName": "Prakash Gawli",
-      "driverPhone": "+91 98225 77119",
-      "routeId": "ROUTE-KHM-CITY-01",
-      "routeName": "Khamgaon City Hospital Circuit (Jalamb Rd - Nandura Rd - Balaji Plots)",
-      "hospitalsCovered": [
-        "Government Hospital of Khamgaon",
-        "Dwarka Hospital of Khamgaon"
-      ],
-      "currentStopIndex": 1,
-      "wasteRecordIds": [
-        "KHM-GOV-2026-02",
-        "KHM-GOV-2026-03",
-        "KHM-DWK-2026-01",
-        "KHM-DWK-2026-02",
-        "KHM-GOV-2026-04"
-      ],
-      "totalWeightKg": 28.7,
-      "status": "Completed",
-      "scheduledDate": "2026-10-16T00:18:18.983Z",
-      "notes": "GPS Barcode-monitored refrigerated van (MH-28-BW-2040) collecting daily biomedical waste across Khamgaon hospitals for MIDC incineration.",
-      "completedDate": "2026-10-16T02:51:45.777Z",
-      "updatedAt": "2026-10-16T02:51:45.777Z"
-    },
-    {
-      "_id": "pickup_2",
-      "manifestNumber": "MAN-KHM-2026-002",
-      "treatmentFacility": "Khamgaon Central Bio-Medical Waste Treatment Facility (CBWTF)",
-      "vehicleNumber": "MH-28-BW-5690",
-      "driverName": "Sunil Shinde",
-      "driverPhone": "+91 98225 88220",
-      "routeId": "ROUTE-KHM-HIGHWAY-02",
-      "routeName": "Khamgaon Highway & Industrial Transit Circuit",
-      "hospitalsCovered": [
-        "Dwarka Hospital of Khamgaon"
-      ],
-      "currentStopIndex": 2,
-      "wasteRecordIds": [
-        "KHM-DWK-2026-03"
-      ],
-      "totalWeightKg": 8.7,
-      "status": "Completed",
-      "scheduledDate": "2026-10-15T00:18:18.983Z",
-      "completedDate": "2026-10-15T18:18:18.983Z",
-      "notes": "Autoclave disinfection and rotary incinerator destruction completed at MIDC Facility. MPCB Certificate #MPCB-KHM-CERT-884 issued."
     }
   ],
   "incidents": [

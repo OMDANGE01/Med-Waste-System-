@@ -87,8 +87,16 @@ export default function WasteRegistryView({
           badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
           dot: 'bg-sky-400',
           icon: Wine,
-          label: 'Blue (Glassware & Metal)',
-          desc: 'Broken ampoules, vials, orthopedic implants (Disinfection & Metal Recycling)'
+          label: 'Blue (Glassware & Implants)',
+          desc: 'Glassware: broken glass, vials, ampoules, plus metallic body implants. Disinfect, then recycle'
+        };
+      case 'White':
+        return {
+          badgeColor: 'bg-slate-200/20 text-slate-100 border-slate-300/40',
+          dot: 'bg-slate-200',
+          icon: Scissors,
+          label: 'White (Sharps)',
+          desc: 'Sharps: needles, scalpels, blades, metal sharps (Autoclave & Shredding)'
         };
       case 'Black':
         return {
@@ -225,17 +233,17 @@ export default function WasteRegistryView({
                     Blue (Glassware & Implants)
                   </div>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Medicine vials, broken ampoules, orthopedic hardware. Method: 1% sodium hypochlorite disinfection & recycling.
+                    Glassware: broken glass, vials, ampoules, plus metallic body implants. Disinfect, then recycle.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                  <div className="font-bold text-slate-300 flex items-center gap-1">
-                    <ShieldAlert className="w-3.5 h-3.5" />
-                    Black (General & Cytotoxic)
+                <div className="p-3 rounded-xl bg-slate-200/10 border border-slate-300/40 space-y-1 shadow-sm">
+                  <div className="font-bold text-slate-100 flex items-center gap-1">
+                    <Scissors className="w-3.5 h-3.5 text-slate-300" />
+                    White (Sharps)
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    General non-infected hospital waste and cytotoxic residues. Method: Secured sanitary landfill / chemical neutralization.
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Sharps: needles, scalpels, blades, metal sharps. Disinfect, autoclave, shred/mutilate.
                   </p>
                 </div>
               </div>

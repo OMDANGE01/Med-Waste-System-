@@ -45,12 +45,9 @@ export default function QRScannerModal({
   );
 
   const SAMPLE_TAGS = [
-    { tagId: 'MW-2026-1001', category: 'Yellow', dept: 'Operating Theater', weight: '6.40', status: 'Logged' },
-    { tagId: 'MW-2026-1002', category: 'Red', dept: 'ICU', weight: '4.80', status: 'Logged' },
-    { tagId: 'MW-2026-1003', category: 'Red', dept: 'Emergency', weight: '2.10', status: 'Collected' },
-    { tagId: 'MW-2026-1004', category: 'Blue', dept: 'Pathology Lab', weight: '3.70', status: 'Logged' },
-    { tagId: 'MW-2026-1009', category: 'Black', dept: 'Oncology', weight: '3.40', status: 'Logged' },
-    { tagId: 'MW-2026-1010', category: 'White', dept: 'Operating Theater', weight: '1.20', status: 'Collected' },
+    { tagId: 'waste_1792118586408_889', category: 'Black', dept: 'Operating Theater (OT-1 & OT-2)', weight: '25.08', status: 'Awaiting Pickup' },
+    { tagId: 'waste_1792117400877_76', category: 'Red', dept: 'Operation Theatre (OT)', weight: '4.20', status: 'Awaiting Pickup' },
+    { tagId: 'waste_1792117327038_495', category: 'Yellow', dept: 'Pathology & Histology', weight: '3.75', status: 'Awaiting Pickup' },
   ];
 
   // Play audio confirmation tone when barcode is detected

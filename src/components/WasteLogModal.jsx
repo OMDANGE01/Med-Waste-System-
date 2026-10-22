@@ -11,6 +11,7 @@ import {
   MapPin, 
   Navigation,
   ShieldAlert,
+  Scissors,
   Camera,
   CheckCircle2,
   Sparkles,
@@ -282,22 +283,22 @@ export default function WasteLogModal({
     { 
       id: 'Blue', 
       name: 'Blue', 
-      label: 'Glassware & Metallic', 
-      desc: 'Broken medicine ampoules, vials, orthopedic implants',
+      label: 'Glassware & Metallic Implants', 
+      desc: 'Glassware: broken glass, vials, ampoules, plus metallic body implants. Disinfect, then recycle',
       icon: Wine, 
       color: 'text-sky-400', 
       border: 'border-sky-500/50', 
       bg: 'bg-sky-500/10' 
     },
     { 
-      id: 'Black', 
-      name: 'Black', 
-      label: 'General & Cytotoxic', 
-      desc: 'General non-infectious hospital waste, spill residue',
-      icon: ShieldAlert, 
-      color: 'text-slate-300', 
-      border: 'border-slate-500/50', 
-      bg: 'bg-slate-700/30' 
+      id: 'White', 
+      name: 'White', 
+      label: 'Sharps (Translucent)', 
+      desc: 'Sharps: needles, scalpels, blades, metal sharps',
+      icon: Scissors, 
+      color: 'text-slate-100', 
+      border: 'border-slate-300/60', 
+      bg: 'bg-slate-200/10' 
     },
   ];
 

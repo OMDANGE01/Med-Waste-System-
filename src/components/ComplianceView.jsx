@@ -148,10 +148,10 @@ export default function ComplianceView({
   const [cpcbChecklist, setCpcbChecklist] = useState([
     { id: 'cpcb-1', category: 'Yellow', title: 'Yellow Non-Chlorinated Bags', rule: 'Must not contain chlorinated plastics; biohazard symbol printed with 2D barcode.', verified: true },
     { id: 'cpcb-2', category: 'Yellow', title: 'Anatomical Tissue Immediate Sealing', rule: 'Organ, limb & soiled dressings packaged within 2 hours of surgical excision.', verified: true },
-    { id: 'cpcb-3', category: 'Red', title: 'Contaminated Plastics & Sharps (CPCB 2016)', rule: 'Contaminated IV catheters, tubing, and sharp hazards segregated into puncture-proof Red containers.', verified: true },
+    { id: 'cpcb-3', category: 'Red', title: 'Contaminated Recyclable Plastics', rule: 'Contaminated IV catheters, tubing, and infected plastics segregated into Red containers.', verified: true },
     { id: 'cpcb-4', category: 'Red', title: 'Pre-Treatment Autoclave Stamping', rule: 'Red bags earmarked for on-site microwave/autoclave shredding before registered recycler transfer.', verified: true },
-    { id: 'cpcb-5', category: 'Blue', title: 'Glassware Disinfection Soak', rule: 'Broken ampoules and medicine vials immersed in 1% sodium hypochlorite solution before collection.', verified: true },
-    { id: 'cpcb-6', category: 'Black', title: 'General & Cytotoxic Waste Isolation', rule: 'Cytotoxic spill residues labeled with double-bagging and chemical neutralization certificate.', verified: true },
+    { id: 'cpcb-5', category: 'Blue', title: 'Glassware & Metallic Implants (Disinfect & Recycle)', rule: 'Glassware: broken glass, vials, ampoules, plus metallic body implants. Disinfect with sodium hypochlorite, then recycle.', verified: true },
+    { id: 'cpcb-6', category: 'White', title: 'White Translucent Sharps Containers', rule: 'Sharps: needles, scalpels, blades, metal sharps segregated into puncture-proof, tamper-evident translucent containers.', verified: true },
   ]);
 
   // Interactive BMW Rules 2016 Checklist State
