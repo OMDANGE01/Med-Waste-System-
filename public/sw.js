@@ -2,7 +2,7 @@
  * MED_WASTE Service Worker
  * 
  * Provides:
- * 1. Asset & Navigation Caching (Stale-While-Revalidate / Cache-First)
+ * 1. Asset & Navigation Caching (Stale-While-Revalidate Cache-First)
  * 2. Offline Fallback for Network Disconnects
  * 3. Background Sync API Integration with IndexedDB for Seamless Auto-Sync to Cloud
  */
